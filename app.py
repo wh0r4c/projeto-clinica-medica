@@ -188,3 +188,46 @@ def inserir_consulta():
 def listar_especialidades():
     return render_template('especialidades/listar_especialidades.html',
                            especialidades=especialidades)
+
+@app.route('/especialidades/inserir', methods=['GET', 'POST'])
+def inserir_especialidade():
+    if request.method == 'POST':
+        nome        = request.form.get('nome', '').strip()
+        descricao   = request.form.get('descricao', '').strip()
+        medico      = request.form.get('medico', '').strip()
+        duracao_str = request.form.get('duracao', '').strip()
+
+        erros = []
+        if not nome:
+            erros.append('O nome da especialidade é obrigatório.')
+        if not descricao:
+            erros.append('A descrição é obrigatória.')
+        if not medico:
+            erros.append('Informe o médico responsável.')
+        try:
+            duracao = int(duracao_str)
+            if duracao <= 0:
+                erros.append('A duração deve ser maior que zero.')
+        except ValueError:
+            erros.append('Informe a duração em minutos (número inteiro).')
+            duracao_str = ''
+
+        if erros:
+            for e in erros:
+                flash(e, 'danger')
+            return render_template('especialidades/inserir_especialidade.html',
+                                   nome=nome, descricao=descricao,
+                                   medico=medico, duracao=duracao_str,
+                                   medicos=usuarios)
+
+        flash(f'Especialidade "{nome}" cadastrada com sucesso!', 'success')
+        return redirect(url_for('listar_especialidades'))
+
+    return render_template('especialidades/inserir_especialidade.html',
+                           medicos=usuarios)
+
+
+@app.route('/equipe')
+def equipe():
+    return render_template('equipe.html')
+

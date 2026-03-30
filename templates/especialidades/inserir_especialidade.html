@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block titulo %}Nova Especialidade — VitaSaúde{% endblock %}
+
+{% block conteudo %}
+<div class="page-header">
+    <h2>🩺 Nova Especialidade</h2>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <div class="card">
+            <div class="card-header" style="background:var(--azul-escuro);color:#fff;">
+                Dados da especialidade
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('inserir_especialidade') }}" method="POST">
+
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">
+                            Nome <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="nome" name="nome"
+                               value="{{ nome | default('') }}"
+                               required minlength="3"
+                               placeholder="Ex: Cardiologia">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">
+                            Descrição <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" id="descricao" name="descricao"
+                                  rows="3"
+                                  placeholder="Descreva brevemente esta especialidade...">{{ descricao | default('') }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="medico" class="form-label">
+                            Médico responsável <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="medico" name="medico" required>
+                            <option value="">Selecione o médico...</option>
+                            {% for m in medicos %}
+                            {% if m.perfil == 'Médico' %}
+                            <option value="{{ m.nome }}"
+                                {% if medico | default('') == m.nome %}selected{% endif %}>
+                                {{ m.nome }}
+                            </option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="duracao" class="form-label">
+                            Duração da consulta (minutos) <span class="text-danger">*</span>
+                        </label>
+                        <input type="number" class="form-control" id="duracao" name="duracao"
+                               value="{{ duracao | default('30') }}"
+                               min="10" max="120" step="5" required
+                               placeholder="Ex: 30">
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4">
+                            ✅ Salvar
+                        </button>
+                        <a href="{{ url_for('listar_especialidades') }}"
+                           class="btn btn-outline-secondary">
+                            ❌ Cancelar
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
