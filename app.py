@@ -48,3 +48,56 @@ def index():
 def servicos():
     return render_template('servicos.html', especialidades=especialidades)
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        senha = request.form.get('senha', '').strip()
+
+        erros = []
+        if not email:
+            erros.append('O e-mail é obrigatório.')
+        if not senha:
+            erros.append('A senha é obrigatória.')
+
+        if erros:
+            for e in erros:
+                flash(e, 'danger')
+            return render_template('login.html', email=email)
+
+        session['usuario'] = email
+        flash('Login realizado com sucesso!', 'success')
+        return redirect(url_for('listar_consultas'))
+
+    return render_template('login.html')
+
+
+@app.route('/cadastro', methods=['GET', 'POST'])
+def cadastro():
+    if request.method == 'POST':
+        nome  = request.form.get('nome', '').strip()
+        email = request.form.get('email', '').strip()
+        senha = request.form.get('senha', '').strip()
+        conf  = request.form.get('confirmar_senha', '').strip()
+
+        erros = []
+        if not nome:
+            erros.append('O nome é obrigatório.')
+        if not email:
+            erros.append('O e-mail é obrigatório.')
+        if not senha:
+            erros.append('A senha é obrigatória.')
+        elif len(senha) < 6:
+            erros.append('A senha deve ter ao menos 6 caracteres.')
+        elif senha != conf:
+            erros.append('As senhas não coincidem.')
+
+        if erros:
+            for e in erros:
+                flash(e, 'danger')
+            return render_template('cadastro.html', nome=nome, email=email)
+
+        flash('Cadastro realizado! Faça login para continuar.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('cadastro.html')

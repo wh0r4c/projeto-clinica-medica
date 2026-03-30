@@ -1,0 +1,71 @@
+{% extends 'base_publica.html' %}
+{% block titulo %}Cadastro — VitaSaúde{% endblock %}
+
+{% block conteudo %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <div style="font-size:2.5rem;">👤</div>
+                        <h2 class="mt-2 mb-0" style="font-size:1.5rem;color:var(--azul-escuro);">
+                            Criar conta
+                        </h2>
+                        <p class="text-muted mt-1" style="font-size:.88rem;">
+                            Preencha os dados para solicitar acesso
+                        </p>
+                    </div>
+
+                    <form action="{{ url_for('cadastro') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">Nome completo</label>
+                            <input type="text" class="form-control" id="nome" name="nome"
+                                   value="{{ nome | default('') }}"
+                                   required minlength="2"
+                                   placeholder="Ex: Dr. João Silva">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-mail</label>
+                            <input type="email" class="form-control" id="email" name="email"
+                                   value="{{ email | default('') }}"
+                                   required placeholder="seu@email.com">
+                        </div>
+                        <div class="mb-2">
+                            <label for="senha" class="form-label">Senha</label>
+                            <input type="password" class="form-control" id="senha" name="senha"
+                                   required minlength="6"
+                                   placeholder="Mínimo 6 caracteres">
+                            <div class="progress mt-2" style="height:5px;border-radius:10px;">
+                                <div id="forca-barra" class="progress-bar" role="progressbar"
+                                     style="width:0%;transition:width .3s,background .3s;"></div>
+                            </div>
+                            <small id="forca-label" class="text-muted"></small>
+                        </div>
+                        <div class="mb-4">
+                            <label for="confirmar_senha" class="form-label">
+                                Confirmar senha
+                            </label>
+                            <input type="password" class="form-control"
+                                   id="confirmar_senha" name="confirmar_senha"
+                                   required placeholder="Repita a senha">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                            Criar conta
+                        </button>
+                    </form>
+
+                    <hr class="my-4">
+                    <p class="text-center text-muted mb-0" style="font-size:.88rem;">
+                        Já tem conta?
+                        <a href="{{ url_for('login') }}"
+                           style="color:var(--azul-claro);font-weight:600;">
+                            Entrar
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
