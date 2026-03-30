@@ -146,3 +146,38 @@ def inserir_usuario():
 def listar_consultas():
     return render_template('consultas/listar_consultas.html', consultas=consultas)
 
+@app.route('/consultas/inserir', methods=['GET', 'POST'])
+def inserir_consulta():
+    if request.method == 'POST':
+        paciente      = request.form.get('paciente', '').strip()
+        medico        = request.form.get('medico', '').strip()
+        especialidade = request.form.get('especialidade', '').strip()
+        data          = request.form.get('data', '').strip()
+        hora          = request.form.get('hora', '').strip()
+
+        erros = []
+        if not paciente:
+            erros.append('Selecione um paciente.')
+        if not medico:
+            erros.append('Informe o médico responsável.')
+        if not especialidade:
+            erros.append('Selecione a especialidade.')
+        if not data:
+            erros.append('Informe a data da consulta.')
+        if not hora:
+            erros.append('Informe o horário da consulta.')
+
+        if erros:
+            for e in erros:
+                flash(e, 'danger')
+            return render_template('consultas/inserir_consulta.html',
+                                   paciente=paciente, medico=medico,
+                                   especialidade=especialidade, data=data, hora=hora,
+                                   pacientes=pacientes, especialidades=especialidades)
+
+        flash(f'Consulta de "{paciente}" agendada com sucesso!', 'success')
+        return redirect(url_for('listar_consultas'))
+
+    return render_template('consultas/inserir_consulta.html',
+                           pacientes=pacientes, especialidades=especialidades)
+

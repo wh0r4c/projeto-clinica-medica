@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block titulo %}Nova Consulta — VitaSaúde{% endblock %}
+
+{% block conteudo %}
+<div class="page-header">
+    <h2>📅 Nova Consulta</h2>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="card">
+            <div class="card-header" style="background:var(--azul-escuro);color:#fff;">
+                Dados da consulta
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('inserir_consulta') }}" method="POST">
+
+                    <div class="mb-3">
+                        <label for="paciente" class="form-label">
+                            Paciente <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="paciente" name="paciente" required>
+                            <option value="">Selecione o paciente...</option>
+                            {% for p in pacientes %}
+                            <option value="{{ p.nome }}"
+                                {% if paciente | default('') == p.nome %}selected{% endif %}>
+                                {{ p.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="especialidade" class="form-label">
+                            Especialidade <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="especialidade" name="especialidade" required>
+                            <option value="">Selecione a especialidade...</option>
+                            {% for e in especialidades %}
+                            <option value="{{ e.nome }}"
+                                {% if especialidade | default('') == e.nome %}selected{% endif %}>
+                                {{ e.nome }} — {{ e.medico }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="medico" class="form-label">
+                            Médico responsável <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="medico" name="medico"
+                               value="{{ medico | default('') }}"
+                               required placeholder="Ex: Dra. Ana Paula Reis">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="data" class="form-label">
+                                Data <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control" id="data" name="data"
+                                   value="{{ data | default('') }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="hora" class="form-label">
+                                Horário <span class="text-danger">*</span>
+                            </label>
+                            <input type="time" class="form-control" id="hora" name="hora"
+                                   value="{{ hora | default('') }}" required>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-2">
+                        <button type="submit" class="btn btn-primary px-4">
+                            ✅ Agendar Consulta
+                        </button>
+                        <a href="{{ url_for('listar_consultas') }}"
+                           class="btn btn-outline-secondary">
+                            ❌ Cancelar
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
