@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block titulo %}Consultas — VitaSaúde{% endblock %}
+
+{% block conteudo %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2>📅 Consultas</h2>
+            <p class="text-muted mb-0" style="font-size:.85rem;">
+                {{ consultas | length }} consulta(s) registrada(s)
+            </p>
+        </div>
+        <a href="{{ url_for('inserir_consulta') }}" class="btn btn-primary">
+            ➕ Nova Consulta
+        </a>
+    </div>
+</div>
+
+<!-- Cards de resumo -->
+<div class="row g-3 mb-4">
+    {% set agendadas  = consultas | selectattr('status','equalto','Agendada')  | list %}
+    {% set confirmadas = consultas | selectattr('status','equalto','Confirmada') | list %}
+    {% set concluidas = consultas | selectattr('status','equalto','Concluída') | list %}
+    {% set canceladas = consultas | selectattr('status','equalto','Cancelada') | list %}
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="numero">{{ agendadas | length }}</div>
+            <div class="label">Agendadas</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card verde">
+            <div class="numero">{{ confirmadas | length }}</div>
+            <div class="label">Confirmadas</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card escuro">
+            <div class="numero">{{ concluidas | length }}</div>
+            <div class="label">Concluídas</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="border-top-color:#e74c3c;">
+            <div class="numero" style="color:#e74c3c;">{{ canceladas | length }}</div>
+            <div class="label">Canceladas</div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered align-middle mb-0">
+            <thead>
+                <tr>
+                    <th style="width:55px">#</th>
+                    <th>Paciente</th>
+                    <th>Médico</th>
+                    <th>Especialidade</th>
+                    <th style="width:110px">Data</th>
+                    <th style="width:75px">Hora</th>
+                    <th style="width:110px" class="text-center">Status</th>
+                    <th style="width:110px" class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in consultas %}
+                <tr>
+                    <td class="text-muted small">{{ c.id }}</td>
+                    <td><strong>{{ c.paciente }}</strong></td>
+                    <td class="text-muted">{{ c.medico }}</td>
+                    <td>
+                        <span class="badge" style="background:#eaf4fb;color:var(--azul);">
+                            {{ c.especialidade }}
+                        </span>
+                    </td>
+                    <td>{{ c.data }}</td>
+                    <td>{{ c.hora }}</td>
+                    <td class="text-center">
+                        {% if c.status == 'Agendada' %}
+                            <span class="badge badge-agendada">Agendada</span>
+                        {% elif c.status == 'Confirmada' %}
+                            <span class="badge badge-confirmada">Confirmada</span>
+                        {% elif c.status == 'Concluída' %}
+                            <span class="badge badge-concluida">Concluída</span>
+                        {% else %}
+                            <span class="badge badge-cancelada">Cancelada</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary" title="Editar">✏️</button>
+                        <button class="btn btn-sm btn-outline-danger btn-excluir"
+                                data-nome="{{ c.paciente }}" title="Excluir">🗑️</button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-5">
+                        Nenhuma consulta registrada.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
