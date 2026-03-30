@@ -1,0 +1,155 @@
+{% extends 'base_publica.html' %}
+{% block titulo %}Clínica VitaSaúde — Cuidando de você{% endblock %}
+
+{% block conteudo %}
+
+<!-- Hero -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <p class="mb-2" style="color:rgba(255,255,255,0.70);font-size:.85rem;letter-spacing:2px;text-transform:uppercase;font-weight:600;">
+                    Saúde com qualidade e cuidado
+                </p>
+                <h1 class="mb-4">
+                    Bem-vindo à<br>Clínica VitaSaúde
+                </h1>
+                <p class="lead mb-4" style="color:rgba(255,255,255,0.82);max-width:500px;font-size:1.05rem;">
+                    Oferecemos atendimento médico humanizado, com especialistas dedicados
+                    à sua saúde e bem-estar. Agende sua consulta com facilidade.
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="{{ url_for('servicos') }}" class="btn btn-success btn-lg px-4">
+                        Ver especialidades
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-4">
+                        Área do profissional
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 text-center mt-5 mt-lg-0">
+                <div style="font-size:8rem;line-height:1;filter:drop-shadow(0 8px 24px rgba(0,0,0,0.25));">
+                    🏥
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Destaques rápidos -->
+<section class="py-4" style="background:#eaf4fb;border-bottom:1px solid #d4e6f1;">
+    <div class="container">
+        <div class="row g-3 text-center">
+            <div class="col-6 col-md-3">
+                <div class="fw-bold" style="font-size:1.6rem;color:var(--azul-escuro);font-family:'Lora',serif;">+500</div>
+                <div class="text-muted small">Pacientes atendidos</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="fw-bold" style="font-size:1.6rem;color:var(--azul-escuro);font-family:'Lora',serif;">{{ especialidades|length }}</div>
+                <div class="text-muted small">Especialidades</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="fw-bold" style="font-size:1.6rem;color:var(--azul-escuro);font-family:'Lora',serif;">3</div>
+                <div class="text-muted small">Médicos especialistas</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="fw-bold" style="font-size:1.6rem;color:var(--azul-escuro);font-family:'Lora',serif;">10+</div>
+                <div class="text-muted small">Anos de experiência</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Especialidades em destaque -->
+<section class="py-5" style="background:#fff;">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 style="color:var(--azul-escuro);">Nossas Especialidades</h2>
+            <p class="text-muted">Atendimento especializado para cuidar da sua saúde</p>
+        </div>
+        <div class="row g-3">
+            {% set icones = ['🫀','🩺','🦷','🦴','👶','🧠','👁️','🩻'] %}
+            {% for e in especialidades %}
+            <div class="col-md-6 col-lg-4">
+                <div class="espec-card">
+                    <div class="espec-icon">{{ icones[loop.index0 % icones|length] }}</div>
+                    <h6 class="fw-bold mb-1" style="color:var(--azul-escuro);">{{ e.nome }}</h6>
+                    <p class="text-muted mb-2" style="font-size:.88rem;">{{ e.descricao }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">👨‍⚕️ {{ e.medico }}</small>
+                        <span class="badge" style="background:var(--verde-bg);color:var(--verde);">
+                            {{ e.duracao }} min
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{{ url_for('servicos') }}" class="btn btn-outline-primary">
+                Ver todas as especialidades →
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Por que escolher a VitaSaúde -->
+<section class="py-5" style="background:var(--bg);">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 style="color:var(--azul-escuro);">Por que escolher a VitaSaúde?</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card p-4 h-100 border-0 shadow-sm">
+                    <div class="espec-icon">🗓️</div>
+                    <h6 class="fw-bold">Agendamento fácil</h6>
+                    <p class="text-muted mb-0" style="font-size:.88rem;">
+                        Marque sua consulta de forma rápida, com confirmação imediata e
+                        lembretes automáticos.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-4 h-100 border-0 shadow-sm">
+                    <div class="espec-icon">👨‍⚕️</div>
+                    <h6 class="fw-bold">Profissionais qualificados</h6>
+                    <p class="text-muted mb-0" style="font-size:.88rem;">
+                        Nossa equipe é formada por médicos especializados, com anos de
+                        experiência e dedicação ao paciente.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-4 h-100 border-0 shadow-sm">
+                    <div class="espec-icon">🤝</div>
+                    <h6 class="fw-bold">Atendimento humanizado</h6>
+                    <p class="text-muted mb-0" style="font-size:.88rem;">
+                        Acreditamos que um bom atendimento começa pelo acolhimento.
+                        Cada paciente é único e merece atenção especial.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="py-5 text-center"
+         style="background:linear-gradient(135deg, var(--azul-escuro), var(--verde));">
+    <div class="container">
+        <h2 class="text-white mb-3">Cuide da sua saúde hoje</h2>
+        <p class="mb-4" style="color:rgba(255,255,255,0.80);">
+            Entre em contato ou acesse o sistema para agendar sua consulta.
+        </p>
+        <a href="{{ url_for('cadastro') }}" class="btn btn-light btn-lg px-5 me-3"
+           style="color:var(--azul-escuro);font-weight:600;">
+            Criar conta
+        </a>
+        <a href="{{ url_for('servicos') }}" class="btn btn-outline-light btn-lg px-5">
+            Ver especialidades
+        </a>
+    </div>
+</section>
+
+{% endblock %}
