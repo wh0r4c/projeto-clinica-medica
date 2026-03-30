@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block titulo %}Novo Paciente — VitaSaúde{% endblock %}
+
+{% block conteudo %}
+<div class="page-header">
+    <h2>🧑‍⚕️ Novo Paciente</h2>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="card">
+            <div class="card-header" style="background:var(--azul-escuro);color:#fff;">
+                Dados do paciente
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('inserir_paciente') }}" method="POST">
+
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">
+                            Nome completo <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="nome" name="nome"
+                               value="{{ nome | default('') }}"
+                               required minlength="2"
+                               placeholder="Ex: Maria da Silva">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="cpf" class="form-label">
+                                CPF <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="cpf" name="cpf"
+                                   value="{{ cpf | default('') }}"
+                                   required placeholder="000.000.000-00"
+                                   maxlength="14">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="nascimento" class="form-label">
+                                Data de nascimento <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control" id="nascimento"
+                                   name="nascimento"
+                                   value="{{ nascimento | default('') }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="telefone" class="form-label">
+                                Telefone <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="telefone"
+                                   name="telefone"
+                                   value="{{ telefone | default('') }}"
+                                   required placeholder="(14) 99999-9999">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="convenio" class="form-label">
+                                Convênio <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="convenio" name="convenio" required>
+                                <option value="">Selecione...</option>
+                                <option value="Particular"
+                                    {% if convenio|default('') == 'Particular' %}selected{% endif %}>
+                                    Particular
+                                </option>
+                                <option value="Unimed"
+                                    {% if convenio|default('') == 'Unimed' %}selected{% endif %}>
+                                    Unimed
+                                </option>
+                                <option value="Bradesco Saúde"
+                                    {% if convenio|default('') == 'Bradesco Saúde' %}selected{% endif %}>
+                                    Bradesco Saúde
+                                </option>
+                                <option value="SulAmérica"
+                                    {% if convenio|default('') == 'SulAmérica' %}selected{% endif %}>
+                                    SulAmérica
+                                </option>
+                                <option value="Amil"
+                                    {% if convenio|default('') == 'Amil' %}selected{% endif %}>
+                                    Amil
+                                </option>
+                                <option value="Hapvida"
+                                    {% if convenio|default('') == 'Hapvida' %}selected{% endif %}>
+                                    Hapvida
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-2">
+                        <button type="submit" class="btn btn-primary px-4">
+                            ✅ Salvar
+                        </button>
+                        <a href="{{ url_for('listar_pacientes') }}"
+                           class="btn btn-outline-secondary">
+                            ❌ Cancelar
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
