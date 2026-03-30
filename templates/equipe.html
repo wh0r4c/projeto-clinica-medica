@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nossa Equipe — Clínica VitaSaúde</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        body { background: #f4f6f7; }
+
+        .equipe-hero {
+            background: linear-gradient(135deg, #154360 0%, #1a5276 50%, #1a7a4a 100%);
+            color: white;
+            padding: 4rem 0 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .equipe-hero::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -5%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(39,174,96,0.20) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .equipe-hero h1 {
+            font-family: 'Lora', serif;
+            font-size: 2.4rem;
+        }
+
+        .membro-card {
+            border: none;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.09);
+            transition: transform .25s, box-shadow .25s;
+            background: #fff;
+        }
+
+        .membro-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.13);
+        }
+
+        .membro-foto {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #27ae60;
+            margin: 2rem auto 1rem;
+            display: block;
+        }
+
+        .membro-foto-placeholder {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2e86c1, #27ae60);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 2rem auto 1rem;
+            border: 4px solid #27ae60;
+        }
+
+        .membro-nome {
+            font-family: 'Lora', serif;
+            font-size: 1.2rem;
+            color: #154360;
+        }
+
+        .membro-email {
+            font-size: .85rem;
+            color: #2e86c1;
+            font-weight: 600;
+        }
+
+        .membro-bio {
+            font-size: .88rem;
+            color: #555;
+            line-height: 1.65;
+        }
+
+        .tag-curso {
+            display: inline-block;
+            background: #eaf4fb;
+            color: #1a5276;
+            font-size: .75rem;
+            font-weight: 700;
+            padding: .3em .9em;
+            border-radius: 20px;
+            margin-bottom: .75rem;
+            border: 1px solid #aed6f1;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="equipe-hero">
+    <div class="container position-relative">
+        <div style="font-size:3rem;margin-bottom:.75rem;">🧑‍💻</div>
+        <h1 class="mb-2">Nossa Equipe</h1>
+        <p style="color:rgba(255,255,255,0.75);margin:0;">
+            Os desenvolvedores por trás do sistema VitaSaúde
+        </p>
+    </div>
+</section>
+
+<!-- Cards dos membros -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4 justify-content-center">
+
+            <!-- ══ MEMBRO 1 — VOCÊ ════════════════════════════════════════
+                 Substitua as informações abaixo pelos seus dados reais.
+                 Para adicionar foto: coloque o arquivo em static/imgs/
+                 e troque o div placeholder pela tag img abaixo.
+            ═══════════════════════════════════════════════════════════════ -->
+            <div class="col-md-5 col-lg-4">
+                <div class="membro-card text-center p-2 pb-4">
+
+                    <!-- Opção A: placeholder com emoji (padrão) -->
+                    <div class="membro-foto-placeholder mx-auto">🧑</div>
+
+                    <!-- Opção B: foto real — remova o div acima e descomente:
+                    <img src="{{ url_for('static', filename='imgs/foto_membro1.jpg') }}"
+                         alt="Foto Membro 1" class="membro-foto"> -->
+
+                    <span class="tag-curso">ADS — FATEC Jahu</span>
+                    <h5 class="membro-nome mb-1">Seu Nome Completo</h5>
+                    <p class="membro-email mb-3">seuemail@fatec.sp.gov.br</p>
+                    <p class="membro-bio px-4">
+                        Escreva aqui 2 a 4 frases sobre você: seu curso,
+                        interesses em tecnologia, o que mais gosta de programar
+                        e seus objetivos profissionais.
+                    </p>
+                </div>
+            </div>
+
+            <!-- ══ MEMBRO 2 — SEU COLEGA ══════════════════════════════════
+                 Colega: este é o arquivo que você vai editar e commitar.
+                 Preencha seus dados abaixo e salve.
+            ═══════════════════════════════════════════════════════════════ -->
+            <div class="col-md-5 col-lg-4">
+                <div class="membro-card text-center p-2 pb-4">
+
+                    <div class="membro-foto-placeholder mx-auto">🧑</div>
+
+                    <span class="tag-curso">ADS — FATEC Jahu</span>
+                    <h5 class="membro-nome mb-1">Nome do Colega</h5>
+                    <p class="membro-email mb-3">colega@fatec.sp.gov.br</p>
+                    <p class="membro-bio px-4">
+                        Colega: substitua este texto pela sua mini bio.
+                        Fale sobre seu curso, seus interesses em programação
+                        e o que você espera da carreira em tecnologia.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Botões de navegação -->
+        <div class="text-center mt-5">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary me-2">
+                ← Página inicial
+            </a>
+            <a href="{{ url_for('login') }}" class="btn btn-primary">
+                Acessar o sistema →
+            </a>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="container">
+        &copy; 2026 <strong>Clínica VitaSaúde</strong> &mdash;
+        Programação para Internet &mdash; FATEC Jahu
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
