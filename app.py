@@ -101,3 +101,9 @@ def cadastro():
         return redirect(url_for('login'))
 
     return render_template('cadastro.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('Você saiu do sistema.', 'info')
+    return redirect(url_for('login'))
