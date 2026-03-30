@@ -1,0 +1,320 @@
+/* ═══════════════════════════════════════════════
+   Clínica VitaSaúde — styles.css
+   Paleta: Azul profissional + Verde saúde
+   ═══════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+    --azul:          #1a5276;
+    --azul-escuro:   #154360;
+    --azul-claro:    #2e86c1;
+    --verde:         #1e8449;
+    --verde-claro:   #27ae60;
+    --verde-bg:      #eafaf1;
+    --texto:         #1c2833;
+    --muted:         #717d7e;
+    --borda:         #d5d8dc;
+    --bg:            #f4f6f7;
+    --branco:        #ffffff;
+}
+
+/* ── Tipografia ── */
+body {
+    font-family: 'Inter', sans-serif;
+    color: var(--texto);
+    background-color: var(--bg);
+    font-size: 0.95rem;
+}
+
+h1, h2, h3, h4, .navbar-brand {
+    font-family: 'Lora', serif;
+}
+
+/* ── Navbar ── */
+.navbar {
+    background-color: var(--azul-escuro) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    padding: 0.7rem 1rem;
+}
+
+.navbar-brand {
+    color: #fff !important;
+    font-size: 1.25rem;
+    letter-spacing: 0.3px;
+}
+
+.navbar-brand span {
+    color: #5dade2;
+}
+
+.navbar-brand small {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.6);
+    display: block;
+    line-height: 1;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+.nav-link {
+    color: rgba(255,255,255,0.80) !important;
+    font-size: 0.88rem;
+    font-weight: 500;
+    padding: 0.45rem 0.85rem !important;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: #fff !important;
+    background-color: rgba(255,255,255,0.12);
+}
+
+.nav-link-logout {
+    color: #f1948a !important;
+    border: 1px solid rgba(241,148,138,0.5);
+    padding: 0.4rem 0.9rem !important;
+    border-radius: 6px;
+}
+
+.nav-link-logout:hover {
+    background-color: rgba(241,148,138,0.15) !important;
+    color: #fff !important;
+}
+
+/* ── Botões ── */
+.btn-primary {
+    background-color: var(--azul-claro);
+    border-color: var(--azul-claro);
+    font-weight: 600;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--azul);
+    border-color: var(--azul);
+}
+
+.btn-success {
+    background-color: var(--verde-claro);
+    border-color: var(--verde-claro);
+    font-weight: 600;
+}
+
+.btn-success:hover {
+    background-color: var(--verde);
+    border-color: var(--verde);
+}
+
+.btn-outline-primary {
+    color: var(--azul-claro);
+    border-color: var(--azul-claro);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--azul-claro);
+    color: #fff;
+}
+
+/* ── Cards ── */
+.card {
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+    background: var(--branco);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    font-weight: 600;
+    font-size: 0.92rem;
+}
+
+/* ── Tabelas ── */
+.table thead th {
+    background-color: var(--azul-escuro);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+    white-space: nowrap;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(46,134,193,0.06);
+}
+
+/* ── Badges de status consulta ── */
+.badge-agendada   { background-color: #2e86c1; color: #fff; }
+.badge-confirmada { background-color: var(--verde-claro); color: #fff; }
+.badge-concluida  { background-color: #717d7e; color: #fff; }
+.badge-cancelada  { background-color: #e74c3c; color: #fff; }
+
+/* ── Formulários ── */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--azul-claro);
+    box-shadow: 0 0 0 0.2rem rgba(46,134,193,0.20);
+}
+
+.form-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--texto);
+    margin-bottom: 0.3rem;
+}
+
+/* ── Flash messages ── */
+.alert {
+    border-radius: 8px;
+    font-weight: 500;
+    border: none;
+    font-size: 0.9rem;
+}
+
+/* ── Hero público ── */
+.hero-section {
+    background: linear-gradient(135deg, var(--azul-escuro) 0%, var(--azul) 50%, #1a7a4a 100%);
+    color: white;
+    padding: 5rem 0 4rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -5%;
+    width: 450px;
+    height: 450px;
+    background: radial-gradient(circle, rgba(39,174,96,0.20) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.hero-section h1 {
+    font-size: 2.8rem;
+    line-height: 1.2;
+}
+
+/* ── Cards de especialidade (público) ── */
+.espec-card {
+    border-left: 4px solid var(--verde-claro);
+    border-radius: 10px;
+    background: var(--branco);
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+    transition: transform 0.2s, box-shadow 0.2s;
+    height: 100%;
+}
+
+.espec-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.espec-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--verde-bg);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 0.85rem;
+}
+
+/* ── Page header interno ── */
+.page-header {
+    background: var(--branco);
+    border-bottom: 1px solid var(--borda);
+    padding: 1.25rem 0;
+    margin-bottom: 1.75rem;
+}
+
+.page-header h2 {
+    font-size: 1.5rem;
+    margin: 0;
+    color: var(--azul-escuro);
+}
+
+/* ── Stat cards no dashboard ── */
+.stat-card {
+    background: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    border-top: 4px solid var(--azul-claro);
+}
+
+.stat-card.verde { border-top-color: var(--verde-claro); }
+.stat-card.escuro { border-top-color: var(--azul-escuro); }
+
+.stat-card .numero {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--azul-escuro);
+    font-family: 'Lora', serif;
+}
+
+.stat-card .label {
+    font-size: 0.82rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ── Equipe ── */
+.membro-foto {
+    width: 115px;
+    height: 115px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--verde-claro);
+    margin: 1.5rem auto 0.75rem;
+    display: block;
+}
+
+.membro-foto-placeholder {
+    width: 115px;
+    height: 115px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--azul-claro), var(--verde-claro));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    margin: 1.5rem auto 0.75rem;
+    border: 4px solid var(--verde-claro);
+}
+
+/* ── Rodapé ── */
+footer {
+    background-color: var(--azul-escuro);
+    color: rgba(255,255,255,0.65);
+    padding: 1.75rem 0;
+    margin-top: 4rem;
+    text-align: center;
+    font-size: 0.82rem;
+}
+
+footer strong { color: #5dade2; }
+
+/* ── Responsividade ── */
+@media (max-width: 768px) {
+    .hero-section h1 { font-size: 1.9rem; }
+    .stat-card .numero { font-size: 1.5rem; }
+}
