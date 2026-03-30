@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block titulo %}Especialidades — VitaSaúde{% endblock %}
+
+{% block conteudo %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2>🩺 Especialidades</h2>
+            <p class="text-muted mb-0" style="font-size:.85rem;">
+                {{ especialidades | length }} especialidade(s) cadastrada(s)
+            </p>
+        </div>
+        <a href="{{ url_for('inserir_especialidade') }}" class="btn btn-primary">
+            ➕ Nova Especialidade
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered align-middle mb-0">
+            <thead>
+                <tr>
+                    <th style="width:55px">#</th>
+                    <th>Nome</th>
+                    <th>Descrição</th>
+                    <th>Médico Responsável</th>
+                    <th style="width:110px" class="text-center">Duração</th>
+                    <th style="width:110px" class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in especialidades %}
+                <tr>
+                    <td class="text-muted small">{{ e.id }}</td>
+                    <td><strong>{{ e.nome }}</strong></td>
+                    <td class="text-muted" style="font-size:.88rem;">{{ e.descricao }}</td>
+                    <td>{{ e.medico }}</td>
+                    <td class="text-center">
+                        <span class="badge"
+                              style="background:var(--verde-bg);color:var(--verde);">
+                            {{ e.duracao }} min
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary" title="Editar">✏️</button>
+                        <button class="btn btn-sm btn-outline-danger btn-excluir"
+                                data-nome="{{ e.nome }}" title="Excluir">🗑️</button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-5">
+                        Nenhuma especialidade cadastrada.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

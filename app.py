@@ -181,3 +181,10 @@ def inserir_consulta():
     return render_template('consultas/inserir_consulta.html',
                            pacientes=pacientes, especialidades=especialidades)
 
+
+# ─── Rotas protegidas — Especialidades ───────────────────────────────────────
+
+@app.route('/especialidades/listar')
+def listar_especialidades():
+    return render_template('especialidades/listar_especialidades.html',
+                           especialidades=especialidades)
