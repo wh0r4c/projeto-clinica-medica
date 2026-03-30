@@ -107,3 +107,10 @@ def logout():
     session.clear()
     flash('Você saiu do sistema.', 'info')
     return redirect(url_for('login'))
+
+# ─── Rotas protegidas — Consultas ────────────────────────────────────────────
+
+@app.route('/consultas/listar')
+def listar_consultas():
+    return render_template('consultas/listar_consultas.html', consultas=consultas)
+

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block titulo %}Usuários — VitaSaúde{% endblock %}
+
+{% block conteudo %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2>👤 Usuários</h2>
+            <p class="text-muted mb-0" style="font-size:.85rem;">
+                {{ usuarios | length }} usuário(s) cadastrado(s)
+            </p>
+        </div>
+        <a href="{{ url_for('inserir_usuario') }}" class="btn btn-primary">
+            ➕ Novo Usuário
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered align-middle mb-0">
+            <thead>
+                <tr>
+                    <th style="width:55px">#</th>
+                    <th>Nome</th>
+                    <th>E-mail</th>
+                    <th style="width:140px" class="text-center">Perfil</th>
+                    <th style="width:110px" class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in usuarios %}
+                <tr>
+                    <td class="text-muted small">{{ u.id }}</td>
+                    <td><strong>{{ u.nome }}</strong></td>
+                    <td class="text-muted">{{ u.email }}</td>
+                    <td class="text-center">
+                        {% if u.perfil == 'Médico' %}
+                            <span class="badge" style="background:#eaf4fb;color:var(--azul);border:1px solid #aed6f1;">
+                                🩺 {{ u.perfil }}
+                            </span>
+                        {% elif u.perfil == 'Administrador' %}
+                            <span class="badge bg-danger">⚙️ {{ u.perfil }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ u.perfil }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary" title="Editar">✏️</button>
+                        <button class="btn btn-sm btn-outline-danger btn-excluir"
+                                data-nome="{{ u.nome }}" title="Excluir">🗑️</button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-5">
+                        Nenhum usuário cadastrado.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
