@@ -110,7 +110,7 @@ def logout():
 
 # ─── Rotas protegidas — Consultas ────────────────────────────────────────────
 
-@app.route('/consultas/listar')
-def listar_consultas():
-    return render_template('consultas/listar_consultas.html', consultas=consultas)
+@app.route('/usuarios/listar')
+def listar_usuarios():
+    return render_template('usuarios/listar_usuarios.html', usuarios=usuarios)
 
