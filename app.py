@@ -114,3 +114,28 @@ def logout():
 def listar_usuarios():
     return render_template('usuarios/listar_usuarios.html', usuarios=usuarios)
 
+@app.route('/usuarios/inserir', methods=['GET', 'POST'])
+def inserir_usuario():
+    if request.method == 'POST':
+        nome   = request.form.get('nome', '').strip()
+        email  = request.form.get('email', '').strip()
+        perfil = request.form.get('perfil', '').strip()
+
+        erros = []
+        if not nome:
+            erros.append('O nome é obrigatório.')
+        if not email:
+            erros.append('O e-mail é obrigatório.')
+        if not perfil:
+            erros.append('Selecione um perfil.')
+
+        if erros:
+            for e in erros:
+                flash(e, 'danger')
+            return render_template('usuarios/inserir_usuario.html',
+                                   nome=nome, email=email, perfil=perfil)
+
+        flash(f'Usuário "{nome}" cadastrado com sucesso!', 'success')
+        return redirect(url_for('listar_usuarios'))
+
+    return render_template('usuarios/inserir_usuario.html')
