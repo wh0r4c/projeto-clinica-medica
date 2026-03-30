@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block titulo %}Pacientes — VitaSaúde{% endblock %}
+
+{% block conteudo %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2>🧑‍⚕️ Pacientes</h2>
+            <p class="text-muted mb-0" style="font-size:.85rem;">
+                {{ pacientes | length }} paciente(s) cadastrado(s)
+            </p>
+        </div>
+        <a href="{{ url_for('inserir_paciente') }}" class="btn btn-primary">
+            ➕ Novo Paciente
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered align-middle mb-0">
+            <thead>
+                <tr>
+                    <th style="width:55px">#</th>
+                    <th>Nome</th>
+                    <th style="width:145px">CPF</th>
+                    <th style="width:125px">Nascimento</th>
+                    <th style="width:155px">Telefone</th>
+                    <th style="width:145px">Convênio</th>
+                    <th style="width:110px" class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pacientes %}
+                <tr>
+                    <td class="text-muted small">{{ p.id }}</td>
+                    <td><strong>{{ p.nome }}</strong></td>
+                    <td class="text-muted" style="font-size:.88rem;">{{ p.cpf }}</td>
+                    <td>{{ p.nascimento }}</td>
+                    <td>{{ p.telefone }}</td>
+                    <td>
+                        {% if p.convenio == 'Particular' %}
+                            <span class="badge bg-secondary">Particular</span>
+                        {% else %}
+                            <span class="badge"
+                                  style="background:#eaf4fb;color:var(--azul);border:1px solid #aed6f1;">
+                                {{ p.convenio }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary" title="Editar">✏️</button>
+                        <button class="btn btn-sm btn-outline-danger btn-excluir"
+                                data-nome="{{ p.nome }}" title="Excluir">🗑️</button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-5">
+                        Nenhum paciente cadastrado.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
