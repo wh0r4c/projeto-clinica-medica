@@ -226,6 +226,45 @@ def inserir_especialidade():
     return render_template('especialidades/inserir_especialidade.html',
                            medicos=usuarios)
 
+# ─── Rotas protegidas — Pacientes (colega) ───────────────────────────────────
+
+@app.route('/pacientes/listar')
+def listar_pacientes():
+    return render_template('pacientes/listar_pacientes.html', pacientes=pacientes)
+
+
+@app.route('/pacientes/inserir', methods=['GET', 'POST'])
+def inserir_paciente():
+    if request.method == 'POST':
+        nome        = request.form.get('nome', '').strip()
+        cpf         = request.form.get('cpf', '').strip()
+        nascimento  = request.form.get('nascimento', '').strip()
+        telefone    = request.form.get('telefone', '').strip()
+        convenio    = request.form.get('convenio', '').strip()
+
+        erros = []
+        if not nome:
+            erros.append('O nome do paciente é obrigatório.')
+        if not cpf:
+            erros.append('O CPF é obrigatório.')
+        if not nascimento:
+            erros.append('A data de nascimento é obrigatória.')
+        if not telefone:
+            erros.append('O telefone é obrigatório.')
+        if not convenio:
+            erros.append('Informe o convênio ou "Particular".')
+
+        if erros:
+            for e in erros:
+                flash(e, 'danger')
+            return render_template('pacientes/inserir_paciente.html',
+                                   nome=nome, cpf=cpf, nascimento=nascimento,
+                                   telefone=telefone, convenio=convenio)
+
+        flash(f'Paciente "{nome}" cadastrado com sucesso!', 'success')
+        return redirect(url_for('listar_pacientes'))
+
+    return render_template('pacientes/inserir_paciente.html')
 
 @app.route('/equipe')
 def equipe():
