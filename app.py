@@ -270,3 +270,5 @@ def inserir_paciente():
 def equipe():
     return render_template('equipe.html')
 
+if __name__ == '__main__':
+    app.run(debug=True)
