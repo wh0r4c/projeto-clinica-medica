@@ -1,40 +1,39 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+from db import iniciar_bd
 
 app = Flask(__name__)
 app.secret_key = 'vitasaude-fatec-2026'
 
+iniciar_bd()
 # ─── Dados simulados ─────────────────────────────────────────────────────────
 
+funcoes = [
+    {'id': 1, 'nome': 'Administrador', 'descricao': 'Acesso total ao sistema', 'status': True, 'pode_gerenciar_usuarios': True, 'ativo': True},
+    {'id': 2, 'nome': 'Médico', 'descricao': 'Consulta e prontuários', 'status': True, 'pode_gerenciar_usuarios': False, 'ativo': True},
+    {'id': 3, 'nome': 'Recepcionista', 'descricao': 'Atendimento e agendamentos', 'status': True, 'pode_gerenciar_usuarios': False, 'ativo': True},
+]
+
 usuarios = [
-    {'id': 1, 'nome': 'Dra. Ana Paula Reis',    'email': 'ana@vitasaude.com',    'perfil': 'Médico'},
-    {'id': 2, 'nome': 'Dr. Carlos Mendonça',     'email': 'carlos@vitasaude.com', 'perfil': 'Médico'},
-    {'id': 3, 'nome': 'Fernanda Lima',           'email': 'fernanda@vitasaude.com','perfil': 'Recepcionista'},
-    {'id': 4, 'nome': 'Dr. Roberto Alves',       'email': 'roberto@vitasaude.com','perfil': 'Médico'},
-    {'id': 5, 'nome': 'Juliana Costa',           'email': 'juliana@vitasaude.com','perfil': 'Administrador'},
+    {'id': 1, 'nome': 'Dra. Ana Paula Reis', 'email': 'ana@vitasaude.com', 'funcao': 'Médico', 'status': 'Ativo', 'senha': '123', 'ativo': True},
+    {'id': 2, 'nome': 'Dr. Carlos Mendonça', 'email': 'carlos@vitasaude.com', 'funcao': 'Médico', 'status': 'Ativo', 'senha': '123', 'ativo': True},
+    {'id': 3, 'nome': 'Fernanda Lima', 'email': 'fernanda@vitasaude.com', 'funcao': 'Recepcionista', 'status': 'Ativo', 'senha': '123', 'ativo': True},
+    {'id': 4, 'nome': 'Juliana Costa', 'email': 'juliana@vitasaude.com', 'funcao': 'Administrador', 'status': 'Ativo', 'senha': '123', 'ativo': True},
 ]
 
 pacientes = [
     {'id': 1, 'nome': 'Marcos Oliveira',   'cpf': '321.654.987-00', 'nascimento': '1985-03-12', 'telefone': '(14) 99812-3456', 'convenio': 'Unimed'},
     {'id': 2, 'nome': 'Patrícia Souza',    'cpf': '456.789.123-11', 'nascimento': '1992-07-28', 'telefone': '(14) 99723-4567', 'convenio': 'SulAmérica'},
     {'id': 3, 'nome': 'Eduardo Ferreira',  'cpf': '789.123.456-22', 'nascimento': '1978-11-05', 'telefone': '(14) 99634-5678', 'convenio': 'Particular'},
-    {'id': 4, 'nome': 'Lucia Nascimento',  'cpf': '123.456.789-33', 'nascimento': '2001-01-19', 'telefone': '(14) 99545-6789', 'convenio': 'Bradesco Saúde'},
-    {'id': 5, 'nome': 'Rafael Cardoso',    'cpf': '654.321.098-44', 'nascimento': '1969-09-30', 'telefone': '(14) 99456-7890', 'convenio': 'Unimed'},
 ]
 
 especialidades = [
-    {'id': 1, 'nome': 'Clínica Geral',      'descricao': 'Atendimento geral e preventivo para todas as idades.',         'medico': 'Dr. Carlos Mendonça',  'duracao': 30},
-    {'id': 2, 'nome': 'Cardiologia',        'descricao': 'Diagnóstico e tratamento de doenças do coração e vasos.',       'medico': 'Dra. Ana Paula Reis',  'duracao': 45},
-    {'id': 3, 'nome': 'Dermatologia',       'descricao': 'Cuidados com a pele, cabelo e unhas.',                          'medico': 'Dr. Roberto Alves',    'duracao': 30},
-    {'id': 4, 'nome': 'Ortopedia',          'descricao': 'Tratamento de ossos, articulações e lesões musculares.',         'medico': 'Dr. Carlos Mendonça',  'duracao': 40},
-    {'id': 5, 'nome': 'Pediatria',          'descricao': 'Saúde e desenvolvimento de crianças e adolescentes.',           'medico': 'Dra. Ana Paula Reis',  'duracao': 30},
+    {'id': 1, 'nome': 'Clínica Geral',      'descricao': 'Atendimento geral e preventivo.', 'medico': 'Dr. Carlos Mendonça',  'duracao': 30},
+    {'id': 2, 'nome': 'Cardiologia',        'descricao': 'Doenças do coração e vasos.', 'medico': 'Dra. Ana Paula Reis',  'duracao': 45},
 ]
 
 consultas = [
     {'id': 1, 'paciente': 'Marcos Oliveira',  'medico': 'Dra. Ana Paula Reis',  'especialidade': 'Cardiologia',   'data': '2026-04-02', 'hora': '08:00', 'status': 'Agendada'},
     {'id': 2, 'paciente': 'Patrícia Souza',   'medico': 'Dr. Carlos Mendonça',  'especialidade': 'Clínica Geral', 'data': '2026-04-02', 'hora': '09:30', 'status': 'Confirmada'},
-    {'id': 3, 'paciente': 'Eduardo Ferreira', 'medico': 'Dr. Roberto Alves',    'especialidade': 'Dermatologia',  'data': '2026-04-03', 'hora': '14:00', 'status': 'Agendada'},
-    {'id': 4, 'paciente': 'Lucia Nascimento', 'medico': 'Dra. Ana Paula Reis',  'especialidade': 'Pediatria',     'data': '2026-03-28', 'hora': '10:00', 'status': 'Concluída'},
-    {'id': 5, 'paciente': 'Rafael Cardoso',   'medico': 'Dr. Carlos Mendonça',  'especialidade': 'Ortopedia',     'data': '2026-03-27', 'hora': '16:30', 'status': 'Cancelada'},
 ]
 
 # ─── Rotas públicas ───────────────────────────────────────────────────────────
@@ -42,7 +41,6 @@ consultas = [
 @app.route('/')
 def index():
     return render_template('index.html', especialidades=especialidades)
-
 
 @app.route('/servicos')
 def servicos():
@@ -53,53 +51,16 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email', '').strip()
         senha = request.form.get('senha', '').strip()
-
-        erros = []
-        if not email:
-            erros.append('O e-mail é obrigatório.')
-        if not senha:
-            erros.append('A senha é obrigatória.')
-
-        if erros:
-            for e in erros:
-                flash(e, 'danger')
-            return render_template('login.html', email=email)
-
         session['usuario'] = email
         flash('Login realizado com sucesso!', 'success')
         return redirect(url_for('listar_consultas'))
-
     return render_template('login.html')
-
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     if request.method == 'POST':
-        nome  = request.form.get('nome', '').strip()
-        email = request.form.get('email', '').strip()
-        senha = request.form.get('senha', '').strip()
-        conf  = request.form.get('confirmar_senha', '').strip()
-
-        erros = []
-        if not nome:
-            erros.append('O nome é obrigatório.')
-        if not email:
-            erros.append('O e-mail é obrigatório.')
-        if not senha:
-            erros.append('A senha é obrigatória.')
-        elif len(senha) < 6:
-            erros.append('A senha deve ter ao menos 6 caracteres.')
-        elif senha != conf:
-            erros.append('As senhas não coincidem.')
-
-        if erros:
-            for e in erros:
-                flash(e, 'danger')
-            return render_template('cadastro.html', nome=nome, email=email)
-
         flash('Cadastro realizado! Faça login para continuar.', 'success')
         return redirect(url_for('login'))
-
     return render_template('cadastro.html')
 
 @app.route('/logout')
@@ -108,39 +69,130 @@ def logout():
     flash('Você saiu do sistema.', 'info')
     return redirect(url_for('login'))
 
-# ─── Rotas protegidas — Consultas ────────────────────────────────────────────
+# ─── Rotas protegidas — Funções ──────────────────────────────────────────────
+
+@app.route('/funcoes/listar')
+def listar_funcoes():
+    funcoes_visiveis = [f for f in funcoes if f.get('ativo', True)]
+    return render_template('funcoes/listar_funcoes.html', funcoes=funcoes_visiveis)
+
+@app.route('/funcoes/inserir', methods=['GET', 'POST'])
+def inserir_funcao():
+    if request.method == 'POST':
+        nome = request.form.get('nome', '').strip()
+        descricao = request.form.get('descricao', '').strip()
+        status = True if request.form.get('status') else False
+        pode_gerenciar = True if request.form.get('pode_gerenciar') else False
+
+        novo_id = max([f['id'] for f in funcoes], default=0) + 1
+        funcoes.append({
+            'id': novo_id, 'nome': nome, 'descricao': descricao,
+            'status': status, 'pode_gerenciar_usuarios': pode_gerenciar, 'ativo': True
+        })
+        flash(f'Função "{nome}" cadastrada com sucesso!', 'success')
+        return redirect(url_for('listar_funcoes'))
+
+    return render_template('funcoes/inserir_funcao.html', dados=None)
+
+@app.route('/funcoes/editar/<int:id>', methods=['GET', 'POST'])
+def editar_funcao(id):
+    funcao = next((f for f in funcoes if f['id'] == id), None)
+    if not funcao:
+        flash('Função não encontrada!', 'danger')
+        return redirect(url_for('listar_funcoes'))
+
+    if request.method == 'POST':
+        funcao['nome'] = request.form.get('nome', '').strip()
+        funcao['descricao'] = request.form.get('descricao', '').strip()
+        funcao['status'] = True if request.form.get('status') else False
+        funcao['pode_gerenciar_usuarios'] = True if request.form.get('pode_gerenciar') else False
+        flash(f'Função "{funcao["nome"]}" atualizada com sucesso!', 'warning')
+        return redirect(url_for('listar_funcoes'))
+
+    return render_template('funcoes/inserir_funcao.html', dados=funcao)
+
+@app.route('/funcoes/esconder/<int:id>', methods=['POST'])
+def esconder_funcao(id):
+    funcao = next((f for f in funcoes if f['id'] == id), None)
+    if funcao:
+        funcao['ativo'] = False
+        flash(f'Função "{funcao["nome"]}" escondida!', 'secondary')
+    return redirect(url_for('listar_funcoes'))
+
+@app.route('/funcoes/excluir/<int:id>', methods=['POST'])
+def excluir_funcao(id):
+    funcao = next((f for f in funcoes if f['id'] == id), None)
+    if funcao:
+        funcoes.remove(funcao)
+        flash(f'Função "{funcao["nome"]}" deletada permanentemente!', 'danger')
+    return redirect(url_for('listar_funcoes'))
+
+# ─── Rotas protegidas — Usuários ─────────────────────────────────────────────
 
 @app.route('/usuarios/listar')
 def listar_usuarios():
-    return render_template('usuarios/listar_usuarios.html', usuarios=usuarios)
+    usuarios_visiveis = [u for u in usuarios if u.get('ativo', True)]
+    return render_template('usuarios/listar_usuarios.html', usuarios=usuarios_visiveis)
 
 @app.route('/usuarios/inserir', methods=['GET', 'POST'])
 def inserir_usuario():
     if request.method == 'POST':
         nome   = request.form.get('nome', '').strip()
         email  = request.form.get('email', '').strip()
-        perfil = request.form.get('perfil', '').strip()
+        funcao = request.form.get('funcao', '').strip()
+        senha  = request.form.get('senha', '').strip()
+        status = request.form.get('status', 'Ativo').strip()
 
-        erros = []
-        if not nome:
-            erros.append('O nome é obrigatório.')
-        if not email:
-            erros.append('O e-mail é obrigatório.')
-        if not perfil:
-            erros.append('Selecione um perfil.')
-
-        if erros:
-            for e in erros:
-                flash(e, 'danger')
-            return render_template('usuarios/inserir_usuario.html',
-                                   nome=nome, email=email, perfil=perfil)
-
+        novo_id = max([u['id'] for u in usuarios], default=0) + 1
+        usuarios.append({
+            'id': novo_id, 'nome': nome, 'email': email,
+            'funcao': funcao, 'senha': senha, 'status': status, 'ativo': True
+        })
         flash(f'Usuário "{nome}" cadastrado com sucesso!', 'success')
         return redirect(url_for('listar_usuarios'))
 
-    return render_template('usuarios/inserir_usuario.html')
+    funcoes_ativas = [f for f in funcoes if f.get('status', True) and f.get('ativo', True)]
+    return render_template('usuarios/inserir_usuario.html', dados=None, funcoes=funcoes_ativas)
 
-# ─── Rotas protegidas — Consultas ────────────────────────────────────────────
+@app.route('/usuarios/editar/<int:id>', methods=['GET', 'POST'])
+def editar_usuario(id):
+    usuario = next((u for u in usuarios if u['id'] == id), None)
+    if not usuario:
+        flash('Usuário não encontrado!', 'danger')
+        return redirect(url_for('listar_usuarios'))
+
+    if request.method == 'POST':
+        usuario['nome'] = request.form.get('nome', '').strip()
+        usuario['email'] = request.form.get('email', '').strip()
+        usuario['funcao'] = request.form.get('funcao', '').strip()
+        usuario['status'] = request.form.get('status', 'Ativo').strip()
+        nova_senha = request.form.get('senha', '').strip()
+        if nova_senha:
+            usuario['senha'] = nova_senha
+            
+        flash(f'Usuário "{usuario["nome"]}" atualizado com sucesso!', 'warning')
+        return redirect(url_for('listar_usuarios'))
+
+    funcoes_ativas = [f for f in funcoes if f.get('status', True) and f.get('ativo', True)]
+    return render_template('usuarios/inserir_usuario.html', dados=usuario, funcoes=funcoes_ativas)
+
+@app.route('/usuarios/esconder/<int:id>', methods=['POST'])
+def esconder_usuario(id):
+    usuario = next((u for u in usuarios if u['id'] == id), None)
+    if usuario:
+        usuario['ativo'] = False
+        flash(f'Usuário "{usuario["nome"]}" escondido!', 'secondary')
+    return redirect(url_for('listar_usuarios'))
+
+@app.route('/usuarios/excluir/<int:id>', methods=['POST'])
+def excluir_usuario(id):
+    usuario = next((u for u in usuarios if u['id'] == id), None)
+    if usuario:
+        usuarios.remove(usuario)
+        flash(f'Usuário "{usuario["nome"]}" deletado permanentemente!', 'danger')
+    return redirect(url_for('listar_usuarios'))
+
+# ─── Rotas Restantes (Padrão) ────────────────────────────────────────────────
 
 @app.route('/consultas/listar')
 def listar_consultas():
@@ -149,121 +201,30 @@ def listar_consultas():
 @app.route('/consultas/inserir', methods=['GET', 'POST'])
 def inserir_consulta():
     if request.method == 'POST':
-        paciente      = request.form.get('paciente', '').strip()
-        medico        = request.form.get('medico', '').strip()
-        especialidade = request.form.get('especialidade', '').strip()
-        data          = request.form.get('data', '').strip()
-        hora          = request.form.get('hora', '').strip()
-
-        erros = []
-        if not paciente:
-            erros.append('Selecione um paciente.')
-        if not medico:
-            erros.append('Informe o médico responsável.')
-        if not especialidade:
-            erros.append('Selecione a especialidade.')
-        if not data:
-            erros.append('Informe a data da consulta.')
-        if not hora:
-            erros.append('Informe o horário da consulta.')
-
-        if erros:
-            for e in erros:
-                flash(e, 'danger')
-            return render_template('consultas/inserir_consulta.html',
-                                   paciente=paciente, medico=medico,
-                                   especialidade=especialidade, data=data, hora=hora,
-                                   pacientes=pacientes, especialidades=especialidades)
-
-        flash(f'Consulta de "{paciente}" agendada com sucesso!', 'success')
+        flash('Consulta agendada com sucesso!', 'success')
         return redirect(url_for('listar_consultas'))
-
-    return render_template('consultas/inserir_consulta.html',
-                           pacientes=pacientes, especialidades=especialidades)
-
-
-# ─── Rotas protegidas — Especialidades ───────────────────────────────────────
+    return render_template('consultas/inserir_consulta.html', pacientes=pacientes, especialidades=especialidades)
 
 @app.route('/especialidades/listar')
 def listar_especialidades():
-    return render_template('especialidades/listar_especialidades.html',
-                           especialidades=especialidades)
+    return render_template('especialidades/listar_especialidades.html', especialidades=especialidades)
 
 @app.route('/especialidades/inserir', methods=['GET', 'POST'])
 def inserir_especialidade():
     if request.method == 'POST':
-        nome        = request.form.get('nome', '').strip()
-        descricao   = request.form.get('descricao', '').strip()
-        medico      = request.form.get('medico', '').strip()
-        duracao_str = request.form.get('duracao', '').strip()
-
-        erros = []
-        if not nome:
-            erros.append('O nome da especialidade é obrigatório.')
-        if not descricao:
-            erros.append('A descrição é obrigatória.')
-        if not medico:
-            erros.append('Informe o médico responsável.')
-        try:
-            duracao = int(duracao_str)
-            if duracao <= 0:
-                erros.append('A duração deve ser maior que zero.')
-        except ValueError:
-            erros.append('Informe a duração em minutos (número inteiro).')
-            duracao_str = ''
-
-        if erros:
-            for e in erros:
-                flash(e, 'danger')
-            return render_template('especialidades/inserir_especialidade.html',
-                                   nome=nome, descricao=descricao,
-                                   medico=medico, duracao=duracao_str,
-                                   medicos=usuarios)
-
-        flash(f'Especialidade "{nome}" cadastrada com sucesso!', 'success')
+        flash('Especialidade cadastrada com sucesso!', 'success')
         return redirect(url_for('listar_especialidades'))
-
-    return render_template('especialidades/inserir_especialidade.html',
-                           medicos=usuarios)
-
-# ─── Rotas protegidas — Pacientes (colega) ───────────────────────────────────
+    return render_template('especialidades/inserir_especialidade.html', medicos=usuarios)
 
 @app.route('/pacientes/listar')
 def listar_pacientes():
     return render_template('pacientes/listar_pacientes.html', pacientes=pacientes)
 
-
 @app.route('/pacientes/inserir', methods=['GET', 'POST'])
 def inserir_paciente():
     if request.method == 'POST':
-        nome        = request.form.get('nome', '').strip()
-        cpf         = request.form.get('cpf', '').strip()
-        nascimento  = request.form.get('nascimento', '').strip()
-        telefone    = request.form.get('telefone', '').strip()
-        convenio    = request.form.get('convenio', '').strip()
-
-        erros = []
-        if not nome:
-            erros.append('O nome do paciente é obrigatório.')
-        if not cpf:
-            erros.append('O CPF é obrigatório.')
-        if not nascimento:
-            erros.append('A data de nascimento é obrigatória.')
-        if not telefone:
-            erros.append('O telefone é obrigatório.')
-        if not convenio:
-            erros.append('Informe o convênio ou "Particular".')
-
-        if erros:
-            for e in erros:
-                flash(e, 'danger')
-            return render_template('pacientes/inserir_paciente.html',
-                                   nome=nome, cpf=cpf, nascimento=nascimento,
-                                   telefone=telefone, convenio=convenio)
-
-        flash(f'Paciente "{nome}" cadastrado com sucesso!', 'success')
+        flash('Paciente cadastrado com sucesso!', 'success')
         return redirect(url_for('listar_pacientes'))
-
     return render_template('pacientes/inserir_paciente.html')
 
 @app.route('/equipe')

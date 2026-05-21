@@ -1,68 +1,72 @@
 {% extends 'base.html' %}
-{% block titulo %}Novo Usuário — VitaSaúde{% endblock %}
+{% block titulo %}{{ 'Editar Usuário' if dados else 'Novo Usuário' }} — VitaSaúde{% endblock %}
 
 {% block conteudo %}
 <div class="page-header">
-    <h2>👤 Novo Usuário</h2>
+    <h2>👤 {{ 'Editar Usuário' if dados else 'Novo Usuário' }}</h2>
 </div>
 
 <div class="row justify-content-center">
-    <div class="col-md-7 col-lg-6">
+    <div class="col-md-8 col-lg-7">
         <div class="card">
             <div class="card-header" style="background:var(--azul-escuro);color:#fff;">
                 Dados do usuário
             </div>
             <div class="card-body p-4">
-                <form action="{{ url_for('inserir_usuario') }}" method="POST">
+                
+                {% if dados %}
+                    <form action="{{ url_for('editar_usuario', id=dados.id) }}" method="POST">
+                {% else %}
+                    <form action="{{ url_for('inserir_usuario') }}" method="POST">
+                {% endif %}
 
                     <div class="mb-3">
-                        <label for="nome" class="form-label">
-                            Nome completo <span class="text-danger">*</span>
-                        </label>
+                        <label for="nome" class="form-label">Nome completo <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="nome" name="nome"
-                               value="{{ nome | default('') }}"
-                               required minlength="2"
-                               placeholder="Ex: Dr. João da Silva">
+                               value="{{ dados.nome if dados else '' }}" required minlength="2" placeholder="Ex: Dr. João da Silva">
                     </div>
 
                     <div class="mb-3">
-                        <label for="email" class="form-label">
-                            E-mail profissional <span class="text-danger">*</span>
-                        </label>
+                        <label for="email" class="form-label">E-mail profissional <span class="text-danger">*</span></label>
                         <input type="email" class="form-control" id="email" name="email"
-                               value="{{ email | default('') }}"
-                               required placeholder="joao@vitasaude.com">
+                               value="{{ dados.email if dados else '' }}" required placeholder="joao@vitasaude.com">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="senha" class="form-label">
+                                Senha {% if not dados %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            <input type="password" class="form-control" id="senha" name="senha"
+                                   {% if not dados %}required{% endif %} 
+                                   placeholder="{% if dados %}Deixe em branco para manter{% else %}Defina uma senha{% endif %}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="Ativo" {% if (dados and dados.status == 'Ativo') or not dados %}selected{% endif %}>Ativo</option>
+                                <option value="Inativo" {% if dados and dados.status == 'Inativo' %}selected{% endif %}>Inativo</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="mb-4">
-                        <label for="perfil" class="form-label">
-                            Perfil <span class="text-danger">*</span>
-                        </label>
-                        <select class="form-select" id="perfil" name="perfil" required>
-                            <option value="">Selecione um perfil...</option>
-                            <option value="Médico"
-                                {% if perfil|default('') == 'Médico' %}selected{% endif %}>
-                                🩺 Médico
-                            </option>
-                            <option value="Recepcionista"
-                                {% if perfil|default('') == 'Recepcionista' %}selected{% endif %}>
-                                📋 Recepcionista
-                            </option>
-                            <option value="Administrador"
-                                {% if perfil|default('') == 'Administrador' %}selected{% endif %}>
-                                ⚙️ Administrador
-                            </option>
+                        <label for="funcao" class="form-label">Função <span class="text-danger">*</span></label>
+                        <select class="form-select" id="funcao" name="funcao" required>
+                            <option value="">Selecione uma função...</option>
+                            {% for f in funcoes %}
+                                <option value="{{ f.nome }}" {% if dados and dados.funcao == f.nome %}selected{% endif %}>
+                                    {{ f.nome }}
+                                </option>
+                            {% endfor %}
                         </select>
                     </div>
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary px-4">
-                            ✅ Salvar
+                            {{ '💾 Salvar Alterações' if dados else '✅ Cadastrar Usuário' }}
                         </button>
-                        <a href="{{ url_for('listar_usuarios') }}"
-                           class="btn btn-outline-secondary">
-                            ❌ Cancelar
-                        </a>
+                        <a href="{{ url_for('listar_usuarios') }}" class="btn btn-outline-secondary">❌ Cancelar</a>
                     </div>
 
                 </form>

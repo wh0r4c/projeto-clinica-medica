@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
-{% block titulo %}Usuários — VitaSaúde{% endblock %}
+{% block titulo %}Funções — VitaSaúde{% endblock %}
 
 {% block conteudo %}
 <div class="page-header">
     <div class="d-flex justify-content-between align-items-center">
         <div>
-            <h2>👤 Usuários</h2>
+            <h2>🛠️ Funções</h2>
             <p class="text-muted mb-0" style="font-size:.85rem;">
-                {{ usuarios | length }} usuário(s) registado(s)
+                {{ funcoes | length }} função(ões) registada(s)
             </p>
         </div>
-        <a href="{{ url_for('inserir_usuario') }}" class="btn btn-primary">➕ Novo Usuário</a>
+        <a href="{{ url_for('inserir_funcao') }}" class="btn btn-primary">➕ Nova Função</a>
     </div>
 </div>
 
@@ -20,44 +20,46 @@
             <thead>
                 <tr>
                     <th style="width:55px">#</th>
-                    <th>Nome</th>
-                    <th>E-mail</th>
-                    <th style="width:160px" class="text-center">Função</th>
+                    <th style="width:200px">Nome da Função</th>
+                    <th>Descrição</th>
+                    <th style="width:120px" class="text-center">Permissão</th>
                     <th style="width:100px" class="text-center">Status</th>
                     <th style="width:230px" class="text-center">Ações</th>
                 </tr>
             </thead>
             <tbody>
-                {% for u in usuarios %}
+                {% for f in funcoes %}
                 <tr>
-                    <td class="text-muted small">{{ u.id }}</td>
-                    <td><strong>{{ u.nome }}</strong></td>
-                    <td class="text-muted">{{ u.email }}</td>
+                    <td class="text-muted small">{{ f.id }}</td>
+                    <td><strong>{{ f.nome }}</strong></td>
+                    <td class="text-muted">{{ f.descricao }}</td>
                     <td class="text-center">
-                        <span class="badge" style="background:#eaf4fb;color:var(--azul);border:1px solid #aed6f1;">
-                            {{ u.funcao }}
-                        </span>
-                    </td>
-                    <td class="text-center">
-                        {% if u.status == 'Ativo' %}
-                            <span class="badge bg-success">Ativo</span>
+                        {% if f.pode_gerenciar_usuarios %}
+                            <span class="badge bg-info text-dark">🛡️ Admin</span>
                         {% else %}
-                            <span class="badge bg-danger">Inativo</span>
+                            <span class="badge bg-light text-dark">👤 Padrão</span>
                         {% endif %}
                     </td>
                     <td class="text-center">
-                        <a href="{{ url_for('editar_usuario', id=u.id) }}" class="btn btn-sm btn-warning">✏️ Editar</a>
+                        {% if f.status %}
+                            <span class="badge bg-success">Ativo</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <a href="{{ url_for('editar_funcao', id=f.id) }}" class="btn btn-sm btn-warning">✏️ Editar</a>
                         
                         <button data-bs-toggle="modal" data-bs-target="#deleteModal"
-                                data-action="{{ url_for('esconder_usuario', id=u.id) }}" 
-                                data-type="Lógico" data-nome="{{ u.nome }}"
+                                data-action="{{ url_for('esconder_funcao', id=f.id) }}" 
+                                data-type="Lógico" data-nome="{{ f.nome }}"
                                 type="button" class="btn btn-sm btn-outline-danger ms-1">
                             👁️‍🗨️ Esconder
                         </button>
 
                         <button data-bs-toggle="modal" data-bs-target="#deleteModal"
-                                data-action="{{ url_for('excluir_usuario', id=u.id) }}" 
-                                data-type="Físico" data-nome="{{ u.nome }}"
+                                data-action="{{ url_for('excluir_funcao', id=f.id) }}" 
+                                data-type="Físico" data-nome="{{ f.nome }}"
                                 type="button" class="btn btn-sm btn-danger ms-1">
                             🗑️ Deletar
                         </button>
@@ -65,7 +67,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" class="text-center text-muted py-5">Nenhum usuário registado.</td>
+                    <td colspan="6" class="text-center text-muted py-5">Nenhuma função registada.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -108,9 +110,9 @@
 
                 const bodyText = deleteModal.querySelector('#bodyText');
                 if(deletedType === 'Lógico') {
-                    bodyText.innerHTML = `Tem a certeza que deseja <b>Esconder (Deleção Lógica)</b> o usuário <b>${nome}</b>?`;
+                    bodyText.innerHTML = `Tem a certeza que deseja <b>Esconder (Deleção Lógica)</b> o registo de <b>${nome}</b>? Ele não aparecerá mais nas listas.`;
                 } else {
-                    bodyText.innerHTML = `Tem a certeza que deseja <b>Deletar Permanentemente (Deleção Física)</b> o usuário <b>${nome}</b>?`;
+                    bodyText.innerHTML = `Tem a certeza que deseja <b>Deletar Permanentemente (Deleção Física)</b> o registo de <b>${nome}</b>? Esta ação não pode ser desfeita.`;
                 }
             });
         }
