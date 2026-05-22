@@ -40,11 +40,12 @@
                             <span class="badge bg-light text-dark">👤 Padrão</span>
                         {% endif %}
                     </td>
+                    {# da pra add um {% if f.status == 'Ativo'} aqui, foi o que o professor fez #}
                     <td class="text-center">
                         {% if f.status %}
                             <span class="badge bg-success">Ativo</span>
                         {% else %}
-                            <span class="badge bg-secondary">Inativo</span>
+                            <span class="badge bg-danger">Inativo</span>
                         {% endif %}
                     </td>
                     <td class="text-center">

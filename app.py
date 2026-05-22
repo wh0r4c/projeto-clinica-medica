@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from db import iniciar_bd
+from db import execute_query
 
 app = Flask(__name__)
 app.secret_key = 'vitasaude-fatec-2026'
@@ -73,23 +74,52 @@ def logout():
 
 @app.route('/funcoes/listar')
 def listar_funcoes():
-    funcoes_visiveis = [f for f in funcoes if f.get('ativo', True)]
-    return render_template('funcoes/listar_funcoes.html', funcoes=funcoes_visiveis)
+    sql = '''
+    SELECT 
+        id_funcao AS id, 
+        nome, 
+        descricao, 
+        status,
+        pode_gerenciar_usuarios,
+        criado_em,
+        alterado_em
+    FROM funcoes
+    ORDER BY id_funcao DESC;
+    '''
+    lista_dados = execute_query(sql, fetch=True)
+    #funcoes_visiveis = [f for f in funcoes if f.get('ativo', True)]
+    return render_template('funcoes/listar_funcoes.html', funcoes=lista_dados)
 
 @app.route('/funcoes/inserir', methods=['GET', 'POST'])
 def inserir_funcao():
     if request.method == 'POST':
         nome = request.form.get('nome', '').strip()
         descricao = request.form.get('descricao', '').strip()
-        status = True if request.form.get('status') else False
-        pode_gerenciar = True if request.form.get('pode_gerenciar') else False
+        
+        # Ajuste para bater com o banco:
+        # O banco usa ENUM('Ativo', 'Inativo'), então convertemos o checkbox
+        status = 'Ativo' if request.form.get('status') else 'Inativo'
+        # ou: status = request.form.get('status', 'Ativo')
+        # O banco usa TINYINT/BOOLEAN (0 ou 1) para permissões
+        pode_gerenciar = 1 if request.form.get('pode_gerenciar') else 0
 
-        novo_id = max([f['id'] for f in funcoes], default=0) + 1
-        funcoes.append({
-            'id': novo_id, 'nome': nome, 'descricao': descricao,
-            'status': status, 'pode_gerenciar_usuarios': pode_gerenciar, 'ativo': True
-        })
-        flash(f'Função "{nome}" cadastrada com sucesso!', 'success')
+        if not nome:
+            flash('O campo <b>NOME</b> é obrigatório', 'danger')
+            return redirect(url_for('funcoes_cadastrar'))
+
+        # SQL para salvar no banco real
+        sql = '''
+        INSERT INTO funcoes (nome, descricao, status, pode_gerenciar_usuarios)
+        VALUES (%s, %s, %s, %s);
+        '''
+        
+        try:
+            # Passamos os valores na tupla para evitar SQL Injection
+            execute_query(sql, (nome, descricao, status, pode_gerenciar))
+            flash(f'Função "{nome}" cadastrada com sucesso no banco!', 'success')
+        except Exception as e:
+            flash(f'Erro ao salvar no banco de dados: {e}', 'danger')
+
         return redirect(url_for('listar_funcoes'))
 
     return render_template('funcoes/inserir_funcao.html', dados=None)
