@@ -11,9 +11,14 @@ CREATE TABLE IF NOT EXISTS funcoes(
     nome VARCHAR(50) NOT NULL UNIQUE,
     descricao VARCHAR(255),
     status ENUM('Ativo', 'Inativo') DEFAULT 'Ativo', 
-    pode_gerenciar_usuarios BOOLEAN DEFAULT 0,
 
-    -- log (Note a vírgula acima e o espaço aqui no comentário)
+    -- PERMISSÕES DO SEU SISTEMA (O que o professor pediu)
+    pode_gerenciar_usuarios BOOLEAN DEFAULT 0,
+    pode_gerenciar_pacientes BOOLEAN DEFAULT 0,
+    pode_gerenciar_especialidades BOOLEAN DEFAULT 0,
+    pode_gerenciar_consultas BOOLEAN DEFAULT 0,
+
+    -- log
     criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
     alterado_em DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

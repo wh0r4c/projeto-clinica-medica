@@ -32,21 +32,34 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Permissões e Status</label>
+                        <label class="form-label">Permissões de Acesso do Sistema</label>
                         <div class="card p-3 border-light shadow-sm">
-                            <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" id="status" name="status" 
-                                       {% if not dados or dados.status %}checked{% endif %}>
-                                <label class="form-check-label" for="status">Função Ativa</label>
+                            
+                            <div class="form-check form-switch mb-3 pb-2" style="border-bottom: 1px solid #eee;">
+                                <input class="form-check-input" type="checkbox" id="status" name="status" checked>
+                                <label class="form-check-label" for="status"><strong>Função Ativa</strong></label>
                             </div>
                             
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="pode_gerenciar" name="pode_gerenciar"
-                                       {% if dados and dados.pode_gerenciar_usuarios %}checked{% endif %}>
-                                <label class="form-check-label" for="pode_gerenciar">
-                                    Pode gerenciar outros usuários? (Admin)
-                                </label>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="pode_gerenciar_usuarios" name="pode_gerenciar_usuarios" value="1">
+                                <label class="form-check-label" for="pode_gerenciar_usuarios">Pode gerenciar <b>Usuários</b></label>
                             </div>
+                            
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="pode_gerenciar_pacientes" name="pode_gerenciar_pacientes" value="1">
+                                <label class="form-check-label" for="pode_gerenciar_pacientes">Pode gerenciar <b>Pacientes</b></label>
+                            </div>
+
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="pode_gerenciar_especialidades" name="pode_gerenciar_especialidades" value="1">
+                                <label class="form-check-label" for="pode_gerenciar_especialidades">Pode gerenciar <b>Especialidades</b></label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="pode_gerenciar_consultas" name="pode_gerenciar_consultas" value="1">
+                                <label class="form-check-label" for="pode_gerenciar_consultas">Pode gerenciar <b>Consultas</b></label>
+                            </div>
+
                         </div>
                     </div>
 

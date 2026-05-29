@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from db import iniciar_bd
+from db import execute_one
 from db import execute_query
+from werkzeug.security import generate_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'vitasaude-fatec-2026'
@@ -81,44 +83,52 @@ def listar_funcoes():
         descricao, 
         status,
         pode_gerenciar_usuarios,
+        pode_gerenciar_pacientes,
+        pode_gerenciar_especialidades,
+        pode_gerenciar_consultas,
         criado_em,
         alterado_em
     FROM funcoes
     ORDER BY id_funcao DESC;
     '''
     lista_dados = execute_query(sql, fetch=True)
-    #funcoes_visiveis = [f for f in funcoes if f.get('ativo', True)]
     return render_template('funcoes/listar_funcoes.html', funcoes=lista_dados)
 
 @app.route('/funcoes/inserir', methods=['GET', 'POST'])
 def inserir_funcao():
     if request.method == 'POST':
-        nome = request.form.get('nome', '').strip()
-        descricao = request.form.get('descricao', '').strip()
-        
-        # Ajuste para bater com o banco:
-        # O banco usa ENUM('Ativo', 'Inativo'), então convertemos o checkbox
+        nome = request.form.get('nome')
+        descricao = request.form.get('descricao')
         status = 'Ativo' if request.form.get('status') else 'Inativo'
-        # ou: status = request.form.get('status', 'Ativo')
-        # O banco usa TINYINT/BOOLEAN (0 ou 1) para permissões
-        pode_gerenciar = 1 if request.form.get('pode_gerenciar') else 0
-
-        if not nome:
-            flash('O campo <b>NOME</b> é obrigatório', 'danger')
-            return redirect(url_for('funcoes_cadastrar'))
-
-        # SQL para salvar no banco real
-        sql = '''
-        INSERT INTO funcoes (nome, descricao, status, pode_gerenciar_usuarios)
-        VALUES (%s, %s, %s, %s);
-        '''
         
+        pode_gerenciar_usuarios = 1 if request.form.get('pode_gerenciar_usuarios') else 0
+        pode_gerenciar_pacientes = 1 if request.form.get('pode_gerenciar_pacientes') else 0
+        pode_gerenciar_especialidades = 1 if request.form.get('pode_gerenciar_especialidades') else 0
+        pode_gerenciar_consultas = 1 if request.form.get('pode_gerenciar_consultas') else 0
+
         try:
-            # Passamos os valores na tupla para evitar SQL Injection
-            execute_query(sql, (nome, descricao, status, pode_gerenciar))
-            flash(f'Função "{nome}" cadastrada com sucesso no banco!', 'success')
+            
+            sql = '''
+            INSERT INTO funcoes (
+                nome, descricao, status, 
+                pode_gerenciar_usuarios, pode_gerenciar_pacientes, 
+                pode_gerenciar_especialidades, pode_gerenciar_consultas
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s);
+            '''
+            
+            valores = (
+                nome, descricao, status, 
+                pode_gerenciar_usuarios, pode_gerenciar_pacientes, 
+                pode_gerenciar_especialidades, pode_gerenciar_consultas
+            )
+            
+            execute_query(sql, valores)
+            flash('Função cadastrada com sucesso!', 'success')
+            
         except Exception as e:
-            flash(f'Erro ao salvar no banco de dados: {e}', 'danger')
+            flash(f'Erro ao salvar no banco!', 'danger')
+            app.logger.error(f'Erro no INSERT: {e}')
 
         return redirect(url_for('listar_funcoes'))
 
@@ -161,28 +171,74 @@ def excluir_funcao(id):
 
 @app.route('/usuarios/listar')
 def listar_usuarios():
-    usuarios_visiveis = [u for u in usuarios if u.get('ativo', True)]
-    return render_template('usuarios/listar_usuarios.html', usuarios=usuarios_visiveis)
+    sql = '''
+        SELECT
+            id_usuario AS id,
+            u.nome,
+            email,
+            f.nome AS funcao,
+            u.status
+        FROM usuarios AS u
+        INNER JOIN funcoes AS f ON u.funcao_id = f.id_funcao
+        ORDER BY id_usuario DESC ;
+    '''
+    lista_dados = execute_query(sql, fetch=True)
+    return render_template('usuarios/listar_usuarios.html', usuarios=lista_dados)
 
 @app.route('/usuarios/inserir', methods=['GET', 'POST'])
 def inserir_usuario():
+
+    sql = 'SELECT id_funcao, nome FROM funcoes'
+    lista_funcoes = execute_query(sql, fetch=True)
+
     if request.method == 'POST':
-        nome   = request.form.get('nome', '').strip()
-        email  = request.form.get('email', '').strip()
-        funcao = request.form.get('funcao', '').strip()
-        senha  = request.form.get('senha', '').strip()
-        status = request.form.get('status', 'Ativo').strip()
+        nome = request.form.get('nome','').strip()
+        email = request.form.get('email','').strip()
+        funcao_id = request.form.get('funcao')
+        senha = request.form.get('senha', '').strip()
+        status = request.form.get('status','Ativo').strip()
 
-        novo_id = max([u['id'] for u in usuarios], default=0) + 1
-        usuarios.append({
-            'id': novo_id, 'nome': nome, 'email': email,
-            'funcao': funcao, 'senha': senha, 'status': status, 'ativo': True
-        })
-        flash(f'Usuário "{nome}" cadastrado com sucesso!', 'success')
-        return redirect(url_for('listar_usuarios'))
+        if not all([nome, email, funcao_id, senha, status]):
+            flash('Preencha todos os campos necessarios!', 'danger')
+            return redirect(url_for('inserir_usuarios'))
+        
+        if senha != confirmar_senha:
+            flash('As senhas nao conferem!')
+            return redirect(url_for('inserir_usuarios'))
+        
+        if len(senha) < 0:
+            flash('A senha deve ter pelo menos 8 caracteres.', 'danger')
+            return redirect(url_for('inserir_usuarios'))
+        
+        sql = '''SELECT COUNT (*) AS qtde FROM usuarios
+                WHERE email = %s OR cpf = %s;
+                '''
+        
+        existente = execute_one(sql)
+        if existente:
+            flash('E-mail ou CPF já cadastrados!', 'danger')
+            return redirect(url_for('inserir_usuarios'))
+        
+        senha_hash = generate_password_hash(senha)
 
-    funcoes_ativas = [f for f in funcoes if f.get('status', True) and f.get('ativo', True)]
-    return render_template('usuarios/inserir_usuario.html', dados=None, funcoes=funcoes_ativas)
+        try:
+            sql_insert = '''
+                INSERT INTO usuarios (nome, email, senha, status, funcao_id)
+                VALUES (%s, %s, %s, %s, %s)
+            '''
+
+            execute_query(sql_insert, (nome, email, senha, status, funcao_id))
+            
+            flash(f'Usuário "{nome}" cadastrado com sucesso!', 'success')
+            return redirect(url_for('listar_usuarios'))
+            
+        except Exception as e:
+            flash(f'Erro ao salvar usuário no banco de dados. Tente novamente.', 'danger')
+            return redirect(url_for('listar_usuarios'))
+
+
+    return render_template('usuarios/inserir_usuario.html', titulo='Cadastrar Usuário', 
+    modo='cadastrar', item=None, lista_funcoes=lista_funcoes)
 
 @app.route('/usuarios/editar/<int:id>', methods=['GET', 'POST'])
 def editar_usuario(id):

@@ -7,7 +7,7 @@
         <div>
             <h2>👤 Usuários</h2>
             <p class="text-muted mb-0" style="font-size:.85rem;">
-                {{ usuarios | length }} usuário(s) registado(s)
+                {{ usuarios | length }} usuário(s) registrado(s)
             </p>
         </div>
         <a href="{{ url_for('inserir_usuario') }}" class="btn btn-primary">➕ Novo Usuário</a>
@@ -33,11 +33,13 @@
                     <td class="text-muted small">{{ u.id }}</td>
                     <td><strong>{{ u.nome }}</strong></td>
                     <td class="text-muted">{{ u.email }}</td>
+                    
                     <td class="text-center">
                         <span class="badge" style="background:#eaf4fb;color:var(--azul);border:1px solid #aed6f1;">
                             {{ u.funcao }}
                         </span>
                     </td>
+                    
                     <td class="text-center">
                         {% if u.status == 'Ativo' %}
                             <span class="badge bg-success">Ativo</span>
@@ -45,6 +47,7 @@
                             <span class="badge bg-danger">Inativo</span>
                         {% endif %}
                     </td>
+                    
                     <td class="text-center">
                         <a href="{{ url_for('editar_usuario', id=u.id) }}" class="btn btn-sm btn-warning">✏️ Editar</a>
                         
@@ -65,7 +68,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" class="text-center text-muted py-5">Nenhum usuário registado.</td>
+                    <td colspan="6" class="text-center text-muted py-5">Nenhum usuário registrado.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -82,7 +85,7 @@
       </div>
       <form id="deleteForm" action="" method="post">
         <div class="modal-body">
-            <p id="bodyText">TEM A CERTEZA QUE DESEJA EXCLUIR ESTE REGISTO?</p>
+            <p id="bodyText">TEM CERTEZA QUE DESEJA EXCLUIR ESTE REGISTRO?</p>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -108,9 +111,9 @@
 
                 const bodyText = deleteModal.querySelector('#bodyText');
                 if(deletedType === 'Lógico') {
-                    bodyText.innerHTML = `Tem a certeza que deseja <b>Esconder (Deleção Lógica)</b> o usuário <b>${nome}</b>?`;
+                    bodyText.innerHTML = `Tem certeza que deseja <b>Esconder (Deleção Lógica)</b> o usuário <b>${nome}</b>? Ele não aparecerá mais nas listas.`;
                 } else {
-                    bodyText.innerHTML = `Tem a certeza que deseja <b>Deletar Permanentemente (Deleção Física)</b> o usuário <b>${nome}</b>?`;
+                    bodyText.innerHTML = `Tem certeza que deseja <b>Deletar Permanentemente (Deleção Física)</b> o usuário <b>${nome}</b>? Esta ação não pode ser desfeita.`;
                 }
             });
         }

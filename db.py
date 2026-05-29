@@ -2,12 +2,12 @@ import os
 import mysql.connector
 from mysql.connector import Error, pooling
 
-# Parâmetros de conexão — editados apenas aqui, usados em todo o sistema
+
 _DB_PARAMS = {
     'host':               'localhost',
     'user':               'root',
     'password':           '', 
-    'database':           'projeto_clinica_medica',  # Mesmo nome do CREATE DATABASE no seu schema.sql
+    'database':           'projeto_clinica_medica',  
     'charset':            'utf8mb4',
     'sql_mode':           ('STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,'
                            'ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'),
@@ -80,7 +80,7 @@ def iniciar_bd():
         return
 
     try:
-        # ATENÇÃO: Conexão direta SEM o parâmetro 'database' para podermos criar o banco
+        
         conn = mysql.connector.connect(
             host=_DB_PARAMS['host'],
             user=_DB_PARAMS['user'],
@@ -88,11 +88,11 @@ def iniciar_bd():
         )
         cursor = conn.cursor()
         
-        # Lê o arquivo schema.sql
+        
         with open(caminho_schema, 'r', encoding='utf-8') as f:
             sql_script = f.read()
             
-        # Divide os comandos usando o ponto-e-vírgula e executa um a um
+        
         comandos = sql_script.split(';')
         
         for comando in comandos:

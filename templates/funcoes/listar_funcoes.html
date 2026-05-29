@@ -34,10 +34,23 @@
                     <td><strong>{{ f.nome }}</strong></td>
                     <td class="text-muted">{{ f.descricao }}</td>
                     <td class="text-center">
-                        {% if f.pode_gerenciar_usuarios %}
-                            <span class="badge bg-info text-dark">🛡️ Admin</span>
-                        {% else %}
+                        {% if not f.pode_gerenciar_usuarios and not f.pode_gerenciar_pacientes and not f.pode_gerenciar_especialidades and not f.pode_gerenciar_consultas %}
                             <span class="badge bg-light text-dark">👤 Padrão</span>
+                        {% else %}
+                            <div class="d-flex flex-column gap-1 align-items-center">
+                                {% if f.pode_gerenciar_usuarios %}
+                                    <span class="badge bg-info text-dark">🛡️ Usuários</span>
+                                {% endif %}
+                                {% if f.pode_gerenciar_pacientes %}
+                                    <span class="badge bg-success">🧑‍⚕️ Pacientes</span>
+                                {% endif %}
+                                {% if f.pode_gerenciar_especialidades %}
+                                    <span class="badge bg-primary">🩺 Especialidades</span>
+                                {% endif %}
+                                {% if f.pode_gerenciar_consultas %}
+                                    <span class="badge bg-warning text-dark">📅 Consultas</span>
+                                {% endif %}
+                            </div>
                         {% endif %}
                     </td>
                     {# da pra add um {% if f.status == 'Ativo'} aqui, foi o que o professor fez #}
