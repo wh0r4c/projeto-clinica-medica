@@ -23,12 +23,6 @@ usuarios = [
     {'id': 4, 'nome': 'Juliana Costa', 'email': 'juliana@vitasaude.com', 'funcao': 'Administrador', 'status': 'Ativo', 'senha': '123', 'ativo': True},
 ]
 
-pacientes = [
-    {'id': 1, 'nome': 'Marcos Oliveira',   'cpf': '321.654.987-00', 'nascimento': '1985-03-12', 'telefone': '(14) 99812-3456', 'convenio': 'Unimed'},
-    {'id': 2, 'nome': 'Patrícia Souza',    'cpf': '456.789.123-11', 'nascimento': '1992-07-28', 'telefone': '(14) 99723-4567', 'convenio': 'SulAmérica'},
-    {'id': 3, 'nome': 'Eduardo Ferreira',  'cpf': '789.123.456-22', 'nascimento': '1978-11-05', 'telefone': '(14) 99634-5678', 'convenio': 'Particular'},
-]
-
 especialidades = [
     {'id': 1, 'nome': 'Clínica Geral',      'descricao': 'Atendimento geral e preventivo.', 'medico': 'Dr. Carlos Mendonça',  'duracao': 30},
     {'id': 2, 'nome': 'Cardiologia',        'descricao': 'Doenças do coração e vasos.', 'medico': 'Dra. Ana Paula Reis',  'duracao': 45},
@@ -320,7 +314,20 @@ def inserir_especialidade():
 
 @app.route('/pacientes/listar')
 def listar_pacientes():
-    return render_template('pacientes/listar_pacientes.html', pacientes=pacientes)
+    sql = '''
+        SELECT 
+            id_paciente AS id, 
+            nome, 
+            cpf, 
+            nascimento, 
+            telefone, 
+            convenio,
+            status
+        FROM pacientes
+        ORDER BY id_paciente DESC;
+    '''
+    lista_dados = execute_query(sql, fetch=True)
+    return render_template('pacientes/listar_pacientes.html', pacientes=lista_dados)
 
 @app.route('/pacientes/inserir', methods=['GET', 'POST'])
 def inserir_paciente():
