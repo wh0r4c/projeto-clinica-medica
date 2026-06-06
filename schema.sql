@@ -43,11 +43,12 @@ CREATE TABLE IF NOT EXISTS usuarios(
     FOREIGN KEY (funcao_id) REFERENCES funcoes (id_funcao)
 );
 
+-- DROP TABLE IF EXISTS pacientes;
+
 CREATE TABLE IF NOT EXISTS pacientes(
     id_paciente INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     cpf VARCHAR(14) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL UNIQUE,
     telefone VARCHAR(20) NOT NULL,
     convenio VARCHAR(50) NOT NULL,
     nascimento DATE NOT NULL,
@@ -63,8 +64,9 @@ CREATE TABLE IF NOT EXISTS especialidades(
     nome VARCHAR(100) NOT NULL UNIQUE,
     descricao VARCHAR(255),
     duracao INT NOT NULL DEFAULT 30, -- em minutos
+    usuario_id INT UNSIGNED NOT NULL, -- médico responsável
     status ENUM('Ativo', 'Inativo') DEFAULT 'Ativo',
-    CONSTRAINT fk_especialidade_medico FOREIGN KEY (usuario_id) REFERENCES usuarios (id_usuario)
+    CONSTRAINT fk_especialidade_medico FOREIGN KEY (usuario_id) REFERENCES usuarios (id_usuario),
 
     -- log
     criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,

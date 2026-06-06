@@ -49,7 +49,9 @@ def execute_query(sql, params=None, fetch=False):
         cursor.execute(sql, params or ())
 
         if fetch:
-            return cursor.fetchall()
+            resultados = cursor.fetchall()
+            conn.commit()
+            return resultados
         else:
             conn.commit()
             return cursor.rowcount
