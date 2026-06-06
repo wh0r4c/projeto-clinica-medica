@@ -164,8 +164,11 @@ def editar_funcao(id):
 
 @app.route('/funcoes/esconder/<int:id>', methods=['POST'])
 def esconder_funcao(id):
-    execute_query("UPDATE funcoes SET status = 'Inativo' WHERE id_funcao = %s", (id,))
-    flash('Função inativada!', 'secondary')
+    try:
+        execute_query("UPDATE funcoes SET status = 'Inativo' WHERE id_funcao = %s", (id,))
+        flash('Função inativada!', 'secondary')
+    except Exception as e:
+        flash('Erro ao inativar função.', 'danger')
     return redirect(url_for('listar_funcoes'))
 
 @app.route('/funcoes/excluir/<int:id>', methods=['POST'])
@@ -173,8 +176,9 @@ def excluir_funcao(id):
     try:
         execute_query("DELETE FROM funcoes WHERE id_funcao = %s", (id,))
         flash('Função deletada!', 'danger')
-    except:
+    except Exception as e:
         flash('Não foi possível deletar. Função em uso.', 'danger')
+        app.logger.error(f'Erro ao excluir função: {e}')
     return redirect(url_for('listar_funcoes'))
 
 # ─── Rotas protegidas — Usuários ─────────────────────────────────────────────
@@ -210,20 +214,18 @@ def inserir_usuario():
 
         if not all([nome, email, funcao_id, senha]):
             flash('Preencha todos os campos necessarios!', 'danger')
-            return redirect(url_for('inserir_usuarios'))
+            return redirect(url_for('inserir_usuario'))
         
         if len(senha) < 8:
             flash('A senha deve ter pelo menos 8 caracteres.', 'danger')
-            return redirect(url_for('inserir_usuarios'))
+            return redirect(url_for('inserir_usuario'))
         
-        sql = '''SELECT id_usuario FROM usuarios
-                WHERE email = %s OR cpf = %s;
-                '''
+        sql = 'SELECT id_usuario FROM usuarios WHERE email = %s'
         
-        existente = execute_one(sql)
+        existente = execute_one(sql, (email,))
         if existente:
             flash('E-mail ou CPF já cadastrados!', 'danger')
-            return redirect(url_for('inserir_usuarios'))
+            return redirect(url_for('inserir_usuario'))
         
         senha_hash = generate_password_hash(senha)
 
@@ -240,11 +242,11 @@ def inserir_usuario():
             
         except Exception as e:
             flash(f'Erro ao salvar usuário no banco de dados. Tente novamente.', 'danger')
-            return redirect(url_for('inserir_usuarios'))
+            return redirect(url_for('inserir_usuario'))
 
 
     return render_template('usuarios/inserir_usuario.html', titulo='Cadastrar Usuário', 
-    modo='cadastrar', item=None, lista_funcoes=lista_funcoes)
+    modo='cadastrar', item=None, funcoes=lista_funcoes)
 
 @app.route('/usuarios/editar/<int:id>', methods=['GET', 'POST'])
 def editar_usuario(id):
@@ -343,13 +345,14 @@ def listar_especialidades():
     sql = '''
         SELECT 
             id_especialidade AS id, 
-            nome, 
-            descricao, 
-            e.medico,
-            duracao,
-            u.nome AS nome_medico
-        FROM especialidades e JOIN usuarios u ON e.medico = u.id_usuario
-        ORDER BY id_especialidade DESC;
+            e.nome, 
+            e.descricao,
+            e.status,
+            e.duracao,
+            u.nome AS medico
+        FROM especialidades AS e 
+        JOIN usuarios AS u ON e.usuario_id = u.id_usuario
+        ORDER BY e.id_especialidade DESC;
     '''
     lista_dados = execute_query(sql, fetch=True)
     return render_template('especialidades/listar_especialidades.html', especialidades=lista_dados)
@@ -357,7 +360,7 @@ def listar_especialidades():
 @app.route('/especialidades/inserir', methods=['GET', 'POST'])
 def inserir_especialidade():
     sql_medicos = '''
-        SELECT id_usuario, nome 
+        SELECT u.id_usuario, u.nome 
         FROM usuarios u 
         JOIN funcoes f 
         ON u.funcao_id = f.id_funcao
@@ -369,10 +372,10 @@ def inserir_especialidade():
     if request.method == 'POST':
         nome = request.form.get('nome', '').strip()
         descricao = request.form.get('descricao', '').strip()
-        medico_id = request.form.get('medico')
+        usuario_id = request.form.get('medico')
         duracao = request.form.get('duracao', '').strip()
 
-        if not all([nome, descricao, medico_id, duracao]):
+        if not all([nome, descricao, usuario_id, duracao]):
             flash('Preencha todos os campos necessários!', 'danger')
             return redirect(url_for('inserir_especialidade'))
 
@@ -381,13 +384,12 @@ def inserir_especialidade():
                 INSERT INTO especialidades (
                 nome, 
                 descricao, 
-                medico, 
-                duracao, 
-                status
+                usuario_id, 
+                duracao
                 )
-                VALUES (%s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s)
             '''
-            execute_query(sql_insert, (nome, descricao, medico_id, duracao))
+            execute_query(sql_insert, (nome, descricao, usuario_id, duracao))
             flash('Especialidade cadastrada com sucesso!', 'success')
             return redirect(url_for('listar_especialidades'))
         except Exception as e:
