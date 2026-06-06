@@ -26,7 +26,8 @@
                     <th>Descrição</th>
                     <th>Médico Responsável</th>
                     <th style="width:110px" class="text-center">Duração</th>
-                    <th style="width:110px" class="text-center">Ações</th>
+                    <th style="width:100px" class="text-center">Status</th>
+                    <th style="width:230px" class="text-center">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -43,9 +44,24 @@
                         </span>
                     </td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-outline-primary" title="Editar">✏️</button>
-                        <button class="btn btn-sm btn-outline-danger btn-excluir"
-                                data-nome="{{ e.nome }}" title="Excluir">🗑️</button>
+                        {% if e.status == 'Ativo' %}
+                            <span class="badge bg-success">Ativo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <a href="{{ url_for('editar_especialidade', id=e.id) }}" class="btn btn-sm btn-warning">✏️ Editar</a>
+                        
+                        <button data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                data-action="{{ url_for('esconder_especialidade', id=e.id) }}" 
+                                data-type="Lógico" data-nome="{{ e.nome }}"
+                                type="button" class="btn btn-sm btn-outline-danger ms-1">👁️‍🗨️ Esconder</button>
+
+                        <button data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                data-action="{{ url_for('excluir_especialidade', id=e.id) }}" 
+                                data-type="Físico" data-nome="{{ e.nome }}"
+                                type="button" class="btn btn-sm btn-danger ms-1">🗑️ Deletar</button>
                     </td>
                 </tr>
                 {% else %}
@@ -59,4 +75,48 @@
         </table>
     </div>
 </div>
+
+<div class="modal fade" id="deleteModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-light">
+        <h1 class="modal-title fs-5">Atenção!</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="deleteForm" action="" method="post">
+        <div class="modal-body">
+            <p id="bodyText">TEM CERTEZA QUE DESEJA EXCLUIR ESTE REGISTRO?</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-danger">SIM! Continuar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function (){
+        const deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function(event){
+                const button = event.relatedTarget;
+                const actionURL = button.getAttribute('data-action');
+                const deletedType = button.getAttribute('data-type');
+                const nome = button.getAttribute('data-nome');
+
+                const form = deleteModal.querySelector('#deleteForm');
+                form.action = actionURL;
+
+                const bodyText = deleteModal.querySelector('#bodyText');
+                if(deletedType === 'Lógico') {
+                    bodyText.innerHTML = `Tem certeza que deseja <b>Esconder (Deleção Lógica)</b> o registro de <b>${nome}</b>? Ele não aparecerá mais nas listas.`;
+                } else {
+                    bodyText.innerHTML = `Tem certeza que deseja <b>Deletar Permanentemente (Deleção Física)</b> o registro de <b>${nome}</b>? Esta ação não pode ser desfeita.`;
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

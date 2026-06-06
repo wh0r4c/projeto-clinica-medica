@@ -15,7 +15,7 @@
             <div class="card-body p-4">
 
                 {% if dados %}
-                    <form action="{{ url_for('editar_especialidade', id=dados.id_especialidades) }}" method="POST">
+                    <form action="{{ url_for('editar_especialidade', id=dados.id_especialidade) }}" method="POST">
                 {% else %}
                     <form action="{{ url_for('inserir_especialidade') }}" method="POST">
                 {% endif %}
