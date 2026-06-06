@@ -198,8 +198,8 @@ def listar_usuarios():
 @app.route('/usuarios/inserir', methods=['GET', 'POST'])
 def inserir_usuario():
 
-    sql = 'SELECT id_funcao, nome FROM funcoes'
-    lista_funcoes = execute_query(sql, fetch=True)
+    sql_funcoes = 'SELECT id_funcao, nome FROM funcoes WHERE status = "Ativo"'
+    lista_funcoes = execute_query(sql_funcoes, fetch=True)
 
     if request.method == 'POST':
         nome = request.form.get('nome','').strip()
@@ -208,19 +208,15 @@ def inserir_usuario():
         senha = request.form.get('senha', '').strip()
         status = request.form.get('status','Ativo').strip()
 
-        if not all([nome, email, funcao_id, senha, status]):
+        if not all([nome, email, funcao_id, senha]):
             flash('Preencha todos os campos necessarios!', 'danger')
             return redirect(url_for('inserir_usuarios'))
         
-        if senha != confirmar_senha:
-            flash('As senhas nao conferem!')
-            return redirect(url_for('inserir_usuarios'))
-        
-        if len(senha) < 0:
+        if len(senha) < 8:
             flash('A senha deve ter pelo menos 8 caracteres.', 'danger')
             return redirect(url_for('inserir_usuarios'))
         
-        sql = '''SELECT NAME AS qtde FROM usuarios
+        sql = '''SELECT id_usuario FROM usuarios
                 WHERE email = %s OR cpf = %s;
                 '''
         
@@ -237,14 +233,14 @@ def inserir_usuario():
                 VALUES (%s, %s, %s, %s, %s)
             '''
 
-            execute_query(sql_insert, (nome, email, senha, status, funcao_id))
+            execute_query(sql_insert, (nome, email, senha_hash, status, funcao_id))
             
             flash(f'Usuário "{nome}" cadastrado com sucesso!', 'success')
             return redirect(url_for('listar_usuarios'))
             
         except Exception as e:
             flash(f'Erro ao salvar usuário no banco de dados. Tente novamente.', 'danger')
-            return redirect(url_for('listar_usuarios'))
+            return redirect(url_for('inserir_usuarios'))
 
 
     return render_template('usuarios/inserir_usuario.html', titulo='Cadastrar Usuário', 
@@ -252,40 +248,81 @@ def inserir_usuario():
 
 @app.route('/usuarios/editar/<int:id>', methods=['GET', 'POST'])
 def editar_usuario(id):
-    usuario = next((u for u in usuarios if u['id'] == id), None)
-    if not usuario:
-        flash('Usuário não encontrado!', 'danger')
-        return redirect(url_for('listar_usuarios'))
-
     if request.method == 'POST':
-        usuario['nome'] = request.form.get('nome', '').strip()
-        usuario['email'] = request.form.get('email', '').strip()
-        usuario['funcao'] = request.form.get('funcao', '').strip()
-        usuario['status'] = request.form.get('status', 'Ativo').strip()
+        nome = request.form.get('nome','').strip()
+        email = request.form.get('email','').strip()
+        funcao_id = request.form.get('funcao')
+        status = request.form.get('status','Ativo').strip()
         nova_senha = request.form.get('senha', '').strip()
-        if nova_senha:
-            usuario['senha'] = nova_senha
-            
-        flash(f'Usuário "{usuario["nome"]}" atualizado com sucesso!', 'warning')
-        return redirect(url_for('listar_usuarios'))
 
-    funcoes_ativas = [f for f in funcoes if f.get('status', True) and f.get('ativo', True)]
+        if not all([nome, email, funcao_id]):
+            flash('Preencha todos os campos necessarios!', 'danger')
+            return redirect(url_for('editar_usuario', id=id))
+        
+        sql = '''SELECT id_usuario FROM usuarios
+                WHERE (email = %s) AND id_usuario != %s;
+                '''
+        
+        existente = execute_one(sql, (email, id))
+        if existente:
+            flash('E-mail já cadastrado para outro usuário!', 'danger')
+            return redirect(url_for('editar_usuario', id=id))
+
+        try:
+            if nova_senha:
+                if len(nova_senha) < 8:
+                    flash('A nova senha deve ter pelo menos 8 caracteres.', 'danger')
+                    return redirect(url_for('editar_usuario', id=id))
+                senha_hash = generate_password_hash(nova_senha)
+                sql_update = '''
+                    UPDATE usuarios
+                    SET nome = %s, email = %s, status = %s, funcao_id = %s, senha = %s
+                    WHERE id_usuario = %s
+                '''
+                execute_query(sql_update, (nome, email, status, funcao_id, senha_hash, id))
+
+            else:
+                sql_update = '''
+                    UPDATE usuarios
+                    SET nome = %s, email = %s, status = %s, funcao_id = %s
+                    WHERE id_usuario = %s
+                '''
+                execute_query(sql_update, (nome, email, status, funcao_id, id))
+
+            flash(f'Usuário "{nome}" atualizado com sucesso!', 'warning')
+            return redirect(url_for('listar_usuarios'))
+            
+        except Exception as e:
+            flash(f'Erro ao atualizar usuário no banco de dados. Tente novamente.', 'danger')
+            return redirect(url_for('editar_usuario', id=id))
+    usuario = execute_one('SELECT id_usuario AS id, nome, email, funcao_id, status FROM usuarios WHERE id_usuario = %s', (id,))
+    if not usuario:
+        flash('Usuário não encontrado.', 'danger')
+        return redirect(url_for('listar_usuarios'))
+    
+    sql_funcoes = '''
+    SELECT id_funcao, nome 
+    FROM funcoes WHERE status = "Ativo"
+    '''
+    funcoes_ativas = execute_query(sql_funcoes, fetch=True)
     return render_template('usuarios/inserir_usuario.html', dados=usuario, funcoes=funcoes_ativas)
 
 @app.route('/usuarios/esconder/<int:id>', methods=['POST'])
 def esconder_usuario(id):
-    usuario = next((u for u in usuarios if u['id'] == id), None)
-    if usuario:
-        usuario['ativo'] = False
-        flash(f'Usuário "{usuario["nome"]}" escondido!', 'secondary')
+    try:
+        execute_query("UPDATE usuarios SET status = 'Inativo' WHERE id_usuario = %s", (id,))
+        flash('Usuário inativado!', 'secondary')
+    except Exception as e:
+        flash('Erro ao inativar usuário.', 'danger')
     return redirect(url_for('listar_usuarios'))
 
 @app.route('/usuarios/excluir/<int:id>', methods=['POST'])
 def excluir_usuario(id):
-    usuario = next((u for u in usuarios if u['id'] == id), None)
-    if usuario:
-        usuarios.remove(usuario)
-        flash(f'Usuário "{usuario["nome"]}" deletado permanentemente!', 'danger')
+    try:
+        execute_query("DELETE FROM usuarios WHERE id_usuario = %s", (id,))
+        flash('Usuário excluído permanentemente!', 'danger')
+    except Exception as e:
+        flash('Erro ao excluir usuário.', 'danger')
     return redirect(url_for('listar_usuarios'))
 
 # ─── Rotas Restantes (Padrão) ────────────────────────────────────────────────
