@@ -396,6 +396,47 @@ def inserir_especialidade():
         
     return render_template('especialidades/inserir_especialidade.html', dados=None, medicos=lista_medicos)
 
+@app.route('/especialidades/editar/<int:id>', methods=['GET', 'POST'])
+def editar_especialidade(id):
+    if request.method == 'POST':
+        nome = request.form.get('nome', '').strip()
+        descricao = request.form.get('descricao', '').strip()
+        usuario_id = request.form.get('medico')
+        duracao = request.form.get('duracao', '').strip()
+        status = 'Ativo' if request.form.get('status') else 'Inativo'
+
+        sql = '''
+        UPDATE especialidades SET 
+        nome=%s, 
+        descricao=%s, 
+        duracao=%s, 
+        usuario_id=%s, 
+        status=%s 
+        WHERE id_especialidade=%s
+        '''
+        execute_query(sql, (nome, descricao, duracao, usuario_id, status, id))
+        flash('Especialidade atualizada!', 'warning')
+        return redirect(url_for('listar_especialidades'))
+
+    especialidade = execute_one('SELECT * FROM especialidades WHERE id_especialidade = %s', (id,))
+    lista_medicos = execute_query("SELECT u.id_usuario, u.nome FROM usuarios u JOIN funcoes f ON u.funcao_id = f.id_funcao WHERE f.nome = 'Médico'", fetch=True)
+    return render_template('especialidades/inserir_especialidade.html', dados=especialidade, medicos=lista_medicos)
+
+@app.route('/especialidades/esconder/<int:id>', methods=['POST'])
+def esconder_especialidade(id):
+    execute_query("UPDATE especialidades SET status = 'Inativo' WHERE id_especialidade = %s", (id,))
+    flash('Especialidade inativada!', 'secondary')
+    return redirect(url_for('listar_especialidades'))
+
+@app.route('/especialidades/excluir/<int:id>', methods=['POST'])
+def excluir_especialidade(id):
+    try:
+        execute_query("DELETE FROM especialidades WHERE id_especialidade = %s", (id,))
+        flash('Especialidade deletada!', 'danger')
+    except:
+        flash('Erro ao deletar especialidade. Existem consultas vinculadas.', 'danger')
+    return redirect(url_for('listar_especialidades'))
+
 @app.route('/pacientes/listar')
 def listar_pacientes():
     sql = '''
