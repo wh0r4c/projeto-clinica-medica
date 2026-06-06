@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% block titulo %}Novo Paciente — VitaSaúde{% endblock %}
+{% block titulo %}{{ 'Editar Paciente' if dados else 'Novo Paciente' }} — VitaSaúde{% endblock %}
 
 {% block conteudo %}
 <div class="page-header">
-    <h2>🧑‍⚕️ Novo Paciente</h2>
+    <h2>🧑‍⚕️ {{ 'Editar Paciente' if dados else 'Novo Paciente' }}</h2>
 </div>
 
 <div class="row justify-content-center">
@@ -13,16 +13,18 @@
                 Dados do paciente
             </div>
             <div class="card-body p-4">
-                <form action="{{ url_for('inserir_paciente') }}" method="POST">
-
+                {% if dados %}
+                    <form action="{{ url_for('editar_paciente', id=dados.id_paciente if dados.id_paciente else dados.id) }}" method="POST">
+                {% else %}
+                    <form action="{{ url_for('inserir_paciente') }}" method="POST">
+                {% endif %}
                     <div class="mb-3">
                         <label for="nome" class="form-label">
                             Nome completo <span class="text-danger">*</span>
                         </label>
                         <input type="text" class="form-control" id="nome" name="nome"
-                               value="{{ nome | default('') }}"
-                               required minlength="2"
-                               placeholder="Ex: Maria da Silva">
+                            value="{{ dados.nome if dados else '' }}" required minlength="2"
+                            placeholder="Ex: Maria da Silva">
                     </div>
 
                     <div class="row">
@@ -31,17 +33,15 @@
                                 CPF <span class="text-danger">*</span>
                             </label>
                             <input type="text" class="form-control" id="cpf" name="cpf"
-                                   value="{{ cpf | default('') }}"
-                                   required placeholder="000.000.000-00"
-                                   maxlength="14">
+                                value="{{ dados.cpf if dados else '' }}" required placeholder="000.000.000-00"
+                                maxlength="14">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="nascimento" class="form-label">
                                 Data de nascimento <span class="text-danger">*</span>
                             </label>
-                            <input type="date" class="form-control" id="nascimento"
-                                   name="nascimento"
-                                   value="{{ nascimento | default('') }}" required>
+                            <input type="date" class="form-control" id="nascimento" name="nascimento"
+                                value="{{ dados.nascimento if dados else '' }}" required>
                         </div>
                     </div>
 
@@ -50,10 +50,8 @@
                             <label for="telefone" class="form-label">
                                 Telefone <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="form-control" id="telefone"
-                                   name="telefone"
-                                   value="{{ telefone | default('') }}"
-                                   required placeholder="(14) 99999-9999">
+                            <input type="text" class="form-control" id="telefone" name="telefone"
+                                value="{{ dados.telefone if dados else '' }}" required placeholder="(14) 99999-9999">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="convenio" class="form-label">
@@ -61,42 +59,46 @@
                             </label>
                             <select class="form-select" id="convenio" name="convenio" required>
                                 <option value="">Selecione...</option>
-                                <option value="Particular"
-                                    {% if convenio|default('') == 'Particular' %}selected{% endif %}>
+                                <option value="Particular" {% if dados and dados.convenio=='Particular' %}selected{%
+                                    endif %}>
                                     Particular
                                 </option>
-                                <option value="Unimed"
-                                    {% if convenio|default('') == 'Unimed' %}selected{% endif %}>
+                                <option value="Unimed" {% if dados and dados.convenio=='Unimed' %}selected{% endif %}>
                                     Unimed
                                 </option>
-                                <option value="Bradesco Saúde"
-                                    {% if convenio|default('') == 'Bradesco Saúde' %}selected{% endif %}>
+                                <option value="Bradesco Saúde" {% if dados and dados.convenio=='Bradesco Saúde'
+                                    %}selected{% endif %}>
                                     Bradesco Saúde
                                 </option>
-                                <option value="SulAmérica"
-                                    {% if convenio|default('') == 'SulAmérica' %}selected{% endif %}>
+                                <option value="SulAmérica" {% if dados and dados.convenio=='SulAmérica' %}selected{%
+                                    endif %}>
                                     SulAmérica
                                 </option>
-                                <option value="Amil"
-                                    {% if convenio|default('') == 'Amil' %}selected{% endif %}>
+                                <option value="Amil" {% if dados and dados.convenio=='Amil' %}selected{% endif %}>
                                     Amil
                                 </option>
-                                <option value="Hapvida"
-                                    {% if convenio|default('') == 'Hapvida' %}selected{% endif %}>
+                                <option value="Hapvida" {% if dados and dados.convenio=='Hapvida' %}selected{% endif %}>
                                     Hapvida
                                 </option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="d-flex gap-2 mt-2">
+                    {% if dados %}
+                        <div class="mb-3 mt-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="status" name="status"
+                                    {{ 'checked' if dados.status == 'Ativo' else '' }}>
+                                <label class="form-check-label" for="status"><strong>Paciente Ativo</strong></label>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="d-flex gap-2 mt-3">
                         <button type="submit" class="btn btn-primary px-4">
-                            ✅ Salvar
+                            {{ '💾 Salvar Alterações' if dados else '✅ Cadastrar Paciente' }}
                         </button>
-                        <a href="{{ url_for('listar_pacientes') }}"
-                           class="btn btn-outline-secondary">
-                            ❌ Cancelar
-                        </a>
+                        <a href="{{ url_for('listar_pacientes') }}" class="btn btn-outline-secondary">❌ Cancelar</a>
                     </div>
 
                 </form>

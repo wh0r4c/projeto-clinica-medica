@@ -53,9 +53,9 @@
                             </div>
                         {% endif %}
                     </td>
-                    {# da pra add um {% if f.status == 'Ativo'} aqui, foi o que o professor fez #}
+                    
                     <td class="text-center">
-                        {% if f.status %}
+                        {% if f.status == 'Ativo' %}
                             <span class="badge bg-success">Ativo</span>
                         {% else %}
                             <span class="badge bg-danger">Inativo</span>

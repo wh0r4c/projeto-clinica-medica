@@ -15,7 +15,7 @@
             <div class="card-body p-4">
                 
                 {% if dados %}
-                    <form action="{{ url_for('editar_funcao', id=dados.id) }}" method="POST">
+                    <form action="{{ url_for('editar_funcao', id=dados.id_funcao) }}" method="POST">
                 {% else %}
                     <form action="{{ url_for('inserir_funcao') }}" method="POST">
                 {% endif %}
@@ -36,7 +36,8 @@
                         <div class="card p-3 border-light shadow-sm">
                             
                             <div class="form-check form-switch mb-3 pb-2" style="border-bottom: 1px solid #eee;">
-                                <input class="form-check-input" type="checkbox" id="status" name="status" checked>
+                                <input class="form-check-input" type="checkbox" id="status" name="status" \
+                                {{ 'checked' if (dados and dados.status) or not dados else '' }}>
                                 <label class="form-check-label" for="status"><strong>Função Ativa</strong></label>
                             </div>
                             
