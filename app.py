@@ -340,7 +340,19 @@ def inserir_consulta():
 
 @app.route('/especialidades/listar')
 def listar_especialidades():
-    return render_template('especialidades/listar_especialidades.html', especialidades=especialidades)
+    sql = '''
+        SELECT 
+            id_especialidade AS id, 
+            nome, 
+            descricao, 
+            e.medico,
+            duracao,
+            u.nome AS nome_medico
+        FROM especialidades e JOIN usuarios u ON e.medico = u.id_usuario
+        ORDER BY id_especialidade DESC;
+    '''
+    lista_dados = execute_query(sql, fetch=True)
+    return render_template('especialidades/listar_especialidades.html', especialidades=lista_dados)
 
 @app.route('/especialidades/inserir', methods=['GET', 'POST'])
 def inserir_especialidade():

@@ -57,3 +57,16 @@ CREATE TABLE IF NOT EXISTS pacientes(
     criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
     alterado_em DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS especialidades(
+    id_especialidade INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL UNIQUE,
+    descricao VARCHAR(255),
+    duracao INT NOT NULL DEFAULT 30, -- em minutos
+    status ENUM('Ativo', 'Inativo') DEFAULT 'Ativo',
+    CONSTRAINT fk_especialidade_medico FOREIGN KEY (usuario_id) REFERENCES usuarios (id_usuario)
+
+    -- log
+    criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+    alterado_em DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
