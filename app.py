@@ -356,10 +356,45 @@ def listar_especialidades():
 
 @app.route('/especialidades/inserir', methods=['GET', 'POST'])
 def inserir_especialidade():
+    sql_medicos = '''
+        SELECT id_usuario, nome 
+        FROM usuarios u 
+        JOIN funcoes f 
+        ON u.funcao_id = f.id_funcao
+        WHERE f.nome = "Médico" 
+        AND u.status = "Ativo"
+    '''
+    lista_medicos = execute_query(sql_medicos, fetch=True)
+    
     if request.method == 'POST':
-        flash('Especialidade cadastrada com sucesso!', 'success')
-        return redirect(url_for('listar_especialidades'))
-    return render_template('especialidades/inserir_especialidade.html', medicos=usuarios)
+        nome = request.form.get('nome', '').strip()
+        descricao = request.form.get('descricao', '').strip()
+        medico_id = request.form.get('medico')
+        duracao = request.form.get('duracao', '').strip()
+
+        if not all([nome, descricao, medico_id, duracao]):
+            flash('Preencha todos os campos necessários!', 'danger')
+            return redirect(url_for('inserir_especialidade'))
+
+        try:
+            sql_insert = '''
+                INSERT INTO especialidades (
+                nome, 
+                descricao, 
+                medico, 
+                duracao, 
+                status
+                )
+                VALUES (%s, %s, %s, %s, %s)
+            '''
+            execute_query(sql_insert, (nome, descricao, medico_id, duracao))
+            flash('Especialidade cadastrada com sucesso!', 'success')
+            return redirect(url_for('listar_especialidades'))
+        except Exception as e:
+            flash('Erro ao salvar especialidade no banco de dados. Tente novamente.', 'danger')
+            return redirect(url_for('inserir_especialidade'))
+        
+    return render_template('especialidades/inserir_especialidade.html', dados=None, medicos=lista_medicos)
 
 @app.route('/pacientes/listar')
 def listar_pacientes():
