@@ -332,9 +332,34 @@ def listar_pacientes():
 @app.route('/pacientes/inserir', methods=['GET', 'POST'])
 def inserir_paciente():
     if request.method == 'POST':
+        nome = request.form.get('nome', '').strip()
+        cpf = request.form.get('cpf', '').strip()
+        nascimento = request.form.get('nascimento', '').strip()
+        telefone = request.form.get('telefone', '').strip()
+        convenio = request.form.get('convenio', '').strip()
+
+        if not all([nome, cpf, nascimento, telefone, convenio]):
+            flash('Preencha todos os campos necessários!', 'danger')
+            return redirect(url_for('inserir_paciente'))
+        
+        if execute_one('SELECT id_paciente FROM pacientes WHERE cpf = %s', (cpf,)):
+            flash('CPF já cadastrado!', 'danger')
+            return redirect(url_for('inserir_paciente'))
+
+        sql = '''
+            INSERT INTO pacientes(
+            nome, 
+            cpf, 
+            nascimento, 
+            telefone, 
+            convenio
+            )
+            VALUES (%s, %s, %s, %s, %s)
+        '''
+        execute_query(sql, params=(nome, cpf, nascimento, telefone, convenio))
         flash('Paciente cadastrado com sucesso!', 'success')
         return redirect(url_for('listar_pacientes'))
-    return render_template('pacientes/inserir_paciente.html')
+    return render_template('pacientes/inserir_paciente.html', dados=None)
 
 @app.route('/equipe')
 def equipe():
