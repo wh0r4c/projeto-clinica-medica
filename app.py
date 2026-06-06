@@ -136,35 +136,51 @@ def inserir_funcao():
 
 @app.route('/funcoes/editar/<int:id>', methods=['GET', 'POST'])
 def editar_funcao(id):
-    funcao = next((f for f in funcoes if f['id'] == id), None)
-    if not funcao:
-        flash('Função não encontrada!', 'danger')
-        return redirect(url_for('listar_funcoes'))
-
     if request.method == 'POST':
-        funcao['nome'] = request.form.get('nome', '').strip()
-        funcao['descricao'] = request.form.get('descricao', '').strip()
-        funcao['status'] = True if request.form.get('status') else False
-        funcao['pode_gerenciar_usuarios'] = True if request.form.get('pode_gerenciar') else False
-        flash(f'Função "{funcao["nome"]}" atualizada com sucesso!', 'warning')
-        return redirect(url_for('listar_funcoes'))
+        nome = request.form.get('nome', '').strip()
+        descricao = request.form.get('descricao', '').strip()
+        status = 'Ativo' if request.form.get('status') else 'Inativo'
+        p_usuarios = 1 if request.form.get('pode_gerenciar_usuarios') else 0
+        p_pacientes = 1 if request.form.get('pode_gerenciar_pacientes') else 0
+        p_especialidades = 1 if request.form.get('pode_gerenciar_especialidades') else 0
+        p_consultas = 1 if request.form.get('pode_gerenciar_consultas') else 0
+
+        try:
+            sql = '''
+                UPDATE funcoes 
+                SET 
+                    nome = %s, 
+                    descricao = %s, 
+                    status = %s, 
+                    pode_gerenciar_usuarios = %s, 
+                    pode_gerenciar_pacientes = %s, 
+                    pode_gerenciar_especialidades = %s, 
+                    pode_gerenciar_consultas = %s 
+                WHERE id_funcao = %s
+            '''
+            execute_query(sql, (nome, descricao, status, p_usuarios, p_pacientes, p_especialidades, p_consultas, id))
+            flash('Função atualizada com sucesso!', 'warning')
+            return redirect(url_for('listar_funcoes'))
+        except Exception as e:
+            flash('Erro ao atualizar.', 'danger')
+
+    funcao = execute_one('SELECT * FROM funcoes WHERE id_funcao = %s', (id,))
 
     return render_template('funcoes/inserir_funcao.html', dados=funcao)
 
 @app.route('/funcoes/esconder/<int:id>', methods=['POST'])
 def esconder_funcao(id):
-    funcao = next((f for f in funcoes if f['id'] == id), None)
-    if funcao:
-        funcao['ativo'] = False
-        flash(f'Função "{funcao["nome"]}" escondida!', 'secondary')
+    execute_query("UPDATE funcoes SET status = 'Inativo' WHERE id_funcao = %s", (id,))
+    flash('Função inativada!', 'secondary')
     return redirect(url_for('listar_funcoes'))
 
 @app.route('/funcoes/excluir/<int:id>', methods=['POST'])
 def excluir_funcao(id):
-    funcao = next((f for f in funcoes if f['id'] == id), None)
-    if funcao:
-        funcoes.remove(funcao)
-        flash(f'Função "{funcao["nome"]}" deletada permanentemente!', 'danger')
+    try:
+        execute_query("DELETE FROM funcoes WHERE id_funcao = %s", (id,))
+        flash('Função deletada!', 'danger')
+    except:
+        flash('Não foi possível deletar. Função em uso.', 'danger')
     return redirect(url_for('listar_funcoes'))
 
 # ─── Rotas protegidas — Usuários ─────────────────────────────────────────────
@@ -210,7 +226,7 @@ def inserir_usuario():
             flash('A senha deve ter pelo menos 8 caracteres.', 'danger')
             return redirect(url_for('inserir_usuarios'))
         
-        sql = '''SELECT COUNT (*) AS qtde FROM usuarios
+        sql = '''SELECT NAME AS qtde FROM usuarios
                 WHERE email = %s OR cpf = %s;
                 '''
         
