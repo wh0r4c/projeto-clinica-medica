@@ -361,6 +361,53 @@ def inserir_paciente():
         return redirect(url_for('listar_pacientes'))
     return render_template('pacientes/inserir_paciente.html', dados=None)
 
+@app.route('/pacientes/editar/<int:id>', methods=['GET', 'POST'])
+def editar_paciente(id):
+    if request.method == 'POST':
+        nome = request.form.get('nome', '').strip()
+        cpf = request.form.get('cpf', '').strip()
+        nascimento = request.form.get('nascimento', '').strip()
+        telefone = request.form.get('telefone', '').strip()
+        convenio = request.form.get('convenio', '').strip()
+        status = 'Ativo' if request.form.get('status') else 'Inativo'
+
+        if not all([nome, cpf, nascimento, telefone, convenio]):
+            flash('Preencha todos os campos necessários!', 'danger')
+            return redirect(url_for('editar_paciente', id=id))
+
+        sql = '''
+            UPDATE pacientes
+            SET 
+                nome = %s, 
+                cpf = %s, 
+                nascimento = %s, 
+                telefone = %s, 
+                convenio = %s,
+                status = %s
+            WHERE id_paciente = %s
+        '''
+        execute_query(sql, params=(nome, cpf, nascimento, telefone, convenio, status, id))
+        flash('Paciente atualizado com sucesso!', 'warning')
+        return redirect(url_for('listar_pacientes'))
+    
+    paciente = execute_one('SELECT * FROM pacientes WHERE id_paciente = %s', (id,))
+    return render_template('pacientes/inserir_paciente.html', dados=paciente)
+
+@app.route('/pacientes/esconder/<int:id>', methods=['POST'])
+def esconder_paciente(id):
+    execute_query("UPDATE pacientes SET status = 'Inativo' WHERE id_paciente = %s", (id,))
+    flash('Paciente inativado!', 'secondary')
+    return redirect(url_for('listar_pacientes'))
+
+@app.route('/pacientes/excluir/<int:id>', methods=['POST'])
+def excluir_paciente(id):
+    try:
+        execute_query("DELETE FROM pacientes WHERE id_paciente = %s", (id,))
+        flash('Paciente deletado!', 'danger')
+    except:
+        flash('Não foi possível deletar. Paciente em uso.', 'danger')
+    return redirect(url_for('listar_pacientes'))
+
 @app.route('/equipe')
 def equipe():
     return render_template('equipe.html')
