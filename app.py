@@ -1,56 +1,114 @@
+from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from db import iniciar_bd
 from db import execute_one
 from db import execute_query
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'vitasaude-fatec-2026'
 
 iniciar_bd()
-# ─── Dados simulados ─────────────────────────────────────────────────────────
 
-funcoes = [
-    {'id': 1, 'nome': 'Administrador', 'descricao': 'Acesso total ao sistema', 'status': True, 'pode_gerenciar_usuarios': True, 'ativo': True},
-    {'id': 2, 'nome': 'Médico', 'descricao': 'Consulta e prontuários', 'status': True, 'pode_gerenciar_usuarios': False, 'ativo': True},
-    {'id': 3, 'nome': 'Recepcionista', 'descricao': 'Atendimento e agendamentos', 'status': True, 'pode_gerenciar_usuarios': False, 'ativo': True},
-]
+def garantir_admin():
+    total = execute_one('SELECT COUNT(*) AS total FROM usuarios')
+    if total and total['total'] > 0:
+        return 
 
-usuarios = [
-    {'id': 1, 'nome': 'Dra. Ana Paula Reis', 'email': 'ana@vitasaude.com', 'funcao': 'Médico', 'status': 'Ativo', 'senha': '123', 'ativo': True},
-    {'id': 2, 'nome': 'Dr. Carlos Mendonça', 'email': 'carlos@vitasaude.com', 'funcao': 'Médico', 'status': 'Ativo', 'senha': '123', 'ativo': True},
-    {'id': 3, 'nome': 'Fernanda Lima', 'email': 'fernanda@vitasaude.com', 'funcao': 'Recepcionista', 'status': 'Ativo', 'senha': '123', 'ativo': True},
-    {'id': 4, 'nome': 'Juliana Costa', 'email': 'juliana@vitasaude.com', 'funcao': 'Administrador', 'status': 'Ativo', 'senha': '123', 'ativo': True},
-]
+    funcao = execute_one("SELECT id_funcao FROM funcoes WHERE nome = 'Administrador'")
+    if not funcao:
+        execute_query(
+            """INSERT INTO funcoes (nome, descricao, status, pode_gerenciar_usuarios, pode_gerenciar_pacientes, pode_gerenciar_especialidades, pode_gerenciar_consultas) 
+               VALUES ('Administrador', 'Acesso total', 'Ativo', 1, 1, 1, 1)"""
+        )
+        funcao = execute_one("SELECT id_funcao FROM funcoes WHERE nome = 'Administrador'")
 
-especialidades = [
-    {'id': 1, 'nome': 'Clínica Geral',      'descricao': 'Atendimento geral e preventivo.', 'medico': 'Dr. Carlos Mendonça',  'duracao': 30},
-    {'id': 2, 'nome': 'Cardiologia',        'descricao': 'Doenças do coração e vasos.', 'medico': 'Dra. Ana Paula Reis',  'duracao': 45},
-]
+    senha_hash = generate_password_hash('admin1234')
+    execute_query(
+        """INSERT INTO usuarios (nome, email, senha, status, funcao_id) 
+           VALUES ('Administrador', 'admin@vitasaude.com', %s, 'Ativo', %s)""",
+        (senha_hash, funcao['id_funcao'])
+    )
 
-consultas = [
-    {'id': 1, 'paciente': 'Marcos Oliveira',  'medico': 'Dra. Ana Paula Reis',  'especialidade': 'Cardiologia',   'data': '2026-04-02', 'hora': '08:00', 'status': 'Agendada'},
-    {'id': 2, 'paciente': 'Patrícia Souza',   'medico': 'Dr. Carlos Mendonça',  'especialidade': 'Clínica Geral', 'data': '2026-04-02', 'hora': '09:30', 'status': 'Confirmada'},
-]
+garantir_admin()
+
+def login_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not session.get('usuario'):
+            flash('Faça login para acessar o sistema.', 'warning')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return wrapper
+
+@app.context_processor
+def injetar_usuario():
+    return dict(usuario_logado=session.get('usuario'))
 
 # ─── Rotas públicas ───────────────────────────────────────────────────────────
 
 @app.route('/')
 def index():
-    return render_template('index.html', especialidades=especialidades)
+    sql = '''
+        SELECT
+        nome,
+        descricao
+        FROM especialidades
+        WHERE status = "Ativo"
+    '''
+    especialidades_bd = execute_query(sql, fetch=True)
+    return render_template('index.html', especialidades=especialidades_bd)
 
 @app.route('/servicos')
 def servicos():
-    return render_template('servicos.html', especialidades=especialidades)
+    sql = '''
+        SELECT
+        nome,
+        descricao
+        FROM especialidades
+        WHERE status = "Ativo"
+    '''
+    especialidades_bd = execute_query(sql, fetch=True)
+    return render_template('servicos.html', especialidades=especialidades_bd)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form.get('email', '').strip()
         senha = request.form.get('senha', '').strip()
-        session['usuario'] = email
-        flash('Login realizado com sucesso!', 'success')
-        return redirect(url_for('listar_consultas'))
+
+        sql = '''
+        SELECT 
+            u.id_usuario,
+            u.nome,
+            u.email,
+            u.senha,
+            u.status,
+            f.nome AS funcao
+            FROM usuarios u
+            JOIN funcoes f ON u.funcao_id = f.id_funcao
+            WHERE u.email = %s
+        '''
+        usuario = execute_one(sql, (email,))
+
+        if not usuario or not check_password_hash(usuario['senha'], senha):
+            flash('E-mail ou senha inválidos!', 'danger')
+            return redirect(url_for('login'))
+        
+        if usuario['status'] != 'Ativo':
+            flash('Sua conta está inativa. Procure a administração.', 'warning')
+            return redirect(url_for('login'))
+        
+        session['usuario'] = {
+            'id': usuario['id_usuario'],
+            'nome': usuario['nome'],
+            'email': usuario['email'],
+            'funcao': usuario['funcao']
+        }
+
+        flash(f'Bem-vindo(a), {usuario["nome"]}!', 'success')
+        return redirect(url_for('listar_pacientes'))
+    
     return render_template('login.html')
 
 @app.route('/cadastro', methods=['GET', 'POST'])
@@ -61,6 +119,7 @@ def cadastro():
     return render_template('cadastro.html')
 
 @app.route('/logout')
+@login_required
 def logout():
     session.clear()
     flash('Você saiu do sistema.', 'info')
@@ -69,6 +128,7 @@ def logout():
 # ─── Rotas protegidas — Funções ──────────────────────────────────────────────
 
 @app.route('/funcoes/listar')
+@login_required
 def listar_funcoes():
     sql = '''
     SELECT 
@@ -89,6 +149,7 @@ def listar_funcoes():
     return render_template('funcoes/listar_funcoes.html', funcoes=lista_dados)
 
 @app.route('/funcoes/inserir', methods=['GET', 'POST'])
+@login_required
 def inserir_funcao():
     if request.method == 'POST':
         nome = request.form.get('nome')
@@ -129,6 +190,7 @@ def inserir_funcao():
     return render_template('funcoes/inserir_funcao.html', dados=None)
 
 @app.route('/funcoes/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
 def editar_funcao(id):
     if request.method == 'POST':
         nome = request.form.get('nome', '').strip()
@@ -163,6 +225,7 @@ def editar_funcao(id):
     return render_template('funcoes/inserir_funcao.html', dados=funcao)
 
 @app.route('/funcoes/esconder/<int:id>', methods=['POST'])
+@login_required
 def esconder_funcao(id):
     try:
         execute_query("UPDATE funcoes SET status = 'Inativo' WHERE id_funcao = %s", (id,))
@@ -172,6 +235,7 @@ def esconder_funcao(id):
     return redirect(url_for('listar_funcoes'))
 
 @app.route('/funcoes/excluir/<int:id>', methods=['POST'])
+@login_required
 def excluir_funcao(id):
     try:
         execute_query("DELETE FROM funcoes WHERE id_funcao = %s", (id,))
@@ -184,6 +248,7 @@ def excluir_funcao(id):
 # ─── Rotas protegidas — Usuários ─────────────────────────────────────────────
 
 @app.route('/usuarios/listar')
+@login_required
 def listar_usuarios():
     sql = '''
         SELECT
@@ -200,6 +265,7 @@ def listar_usuarios():
     return render_template('usuarios/listar_usuarios.html', usuarios=lista_dados)
 
 @app.route('/usuarios/inserir', methods=['GET', 'POST'])
+@login_required
 def inserir_usuario():
 
     sql_funcoes = 'SELECT id_funcao, nome FROM funcoes WHERE status = "Ativo"'
@@ -208,7 +274,7 @@ def inserir_usuario():
     if request.method == 'POST':
         nome = request.form.get('nome','').strip()
         email = request.form.get('email','').strip()
-        funcao_id = request.form.get('funcao')
+        funcao_id = request.form.get('funcao_id')
         senha = request.form.get('senha', '').strip()
         status = request.form.get('status','Ativo').strip()
 
@@ -249,11 +315,12 @@ def inserir_usuario():
     modo='cadastrar', item=None, funcoes=lista_funcoes)
 
 @app.route('/usuarios/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
 def editar_usuario(id):
     if request.method == 'POST':
         nome = request.form.get('nome','').strip()
         email = request.form.get('email','').strip()
-        funcao_id = request.form.get('funcao')
+        funcao_id = request.form.get('funcao_id')
         status = request.form.get('status','Ativo').strip()
         nova_senha = request.form.get('senha', '').strip()
 
@@ -310,6 +377,7 @@ def editar_usuario(id):
     return render_template('usuarios/inserir_usuario.html', dados=usuario, funcoes=funcoes_ativas)
 
 @app.route('/usuarios/esconder/<int:id>', methods=['POST'])
+@login_required
 def esconder_usuario(id):
     try:
         execute_query("UPDATE usuarios SET status = 'Inativo' WHERE id_usuario = %s", (id,))
@@ -319,6 +387,7 @@ def esconder_usuario(id):
     return redirect(url_for('listar_usuarios'))
 
 @app.route('/usuarios/excluir/<int:id>', methods=['POST'])
+@login_required
 def excluir_usuario(id):
     try:
         execute_query("DELETE FROM usuarios WHERE id_usuario = %s", (id,))
@@ -330,17 +399,24 @@ def excluir_usuario(id):
 # ─── Rotas Restantes (Padrão) ────────────────────────────────────────────────
 
 @app.route('/consultas/listar')
+@login_required
 def listar_consultas():
-    return render_template('consultas/listar_consultas.html', consultas=consultas)
+    return render_template('consultas/listar_consultas.html', consultas=[])
 
 @app.route('/consultas/inserir', methods=['GET', 'POST'])
+@login_required
 def inserir_consulta():
     if request.method == 'POST':
         flash('Consulta agendada com sucesso!', 'success')
         return redirect(url_for('listar_consultas'))
-    return render_template('consultas/inserir_consulta.html', pacientes=pacientes, especialidades=especialidades)
+    
+    listar_pacientes = execute_query('SELECT id_paciente, nome FROM pacientes WHERE status = "Ativo"', fetch=True)
+    lista_especialidades = execute_query('SELECT id_especialidade, nome FROM especialidades WHERE status = "Ativo"', fetch=True)
+
+    return render_template('consultas/inserir_consulta.html', pacientes=listar_pacientes, especialidades=lista_especialidades)
 
 @app.route('/especialidades/listar')
+@login_required
 def listar_especialidades():
     sql = '''
         SELECT 
@@ -358,6 +434,7 @@ def listar_especialidades():
     return render_template('especialidades/listar_especialidades.html', especialidades=lista_dados)
 
 @app.route('/especialidades/inserir', methods=['GET', 'POST'])
+@login_required
 def inserir_especialidade():
     sql_medicos = '''
         SELECT u.id_usuario, u.nome 
@@ -399,6 +476,7 @@ def inserir_especialidade():
     return render_template('especialidades/inserir_especialidade.html', dados=None, medicos=lista_medicos)
 
 @app.route('/especialidades/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
 def editar_especialidade(id):
     if request.method == 'POST':
         nome = request.form.get('nome', '').strip()
@@ -425,12 +503,14 @@ def editar_especialidade(id):
     return render_template('especialidades/inserir_especialidade.html', dados=especialidade, medicos=lista_medicos)
 
 @app.route('/especialidades/esconder/<int:id>', methods=['POST'])
+@login_required
 def esconder_especialidade(id):
     execute_query("UPDATE especialidades SET status = 'Inativo' WHERE id_especialidade = %s", (id,))
     flash('Especialidade inativada!', 'secondary')
     return redirect(url_for('listar_especialidades'))
 
 @app.route('/especialidades/excluir/<int:id>', methods=['POST'])
+@login_required
 def excluir_especialidade(id):
     try:
         execute_query("DELETE FROM especialidades WHERE id_especialidade = %s", (id,))
@@ -440,6 +520,7 @@ def excluir_especialidade(id):
     return redirect(url_for('listar_especialidades'))
 
 @app.route('/pacientes/listar')
+@login_required
 def listar_pacientes():
     sql = '''
         SELECT 
@@ -457,6 +538,7 @@ def listar_pacientes():
     return render_template('pacientes/listar_pacientes.html', pacientes=lista_dados)
 
 @app.route('/pacientes/inserir', methods=['GET', 'POST'])
+@login_required
 def inserir_paciente():
     if request.method == 'POST':
         nome = request.form.get('nome', '').strip()
@@ -489,6 +571,7 @@ def inserir_paciente():
     return render_template('pacientes/inserir_paciente.html', dados=None)
 
 @app.route('/pacientes/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
 def editar_paciente(id):
     if request.method == 'POST':
         nome = request.form.get('nome', '').strip()
@@ -521,12 +604,14 @@ def editar_paciente(id):
     return render_template('pacientes/inserir_paciente.html', dados=paciente)
 
 @app.route('/pacientes/esconder/<int:id>', methods=['POST'])
+@login_required
 def esconder_paciente(id):
     execute_query("UPDATE pacientes SET status = 'Inativo' WHERE id_paciente = %s", (id,))
     flash('Paciente inativado!', 'secondary')
     return redirect(url_for('listar_pacientes'))
 
 @app.route('/pacientes/excluir/<int:id>', methods=['POST'])
+@login_required
 def excluir_paciente(id):
     try:
         execute_query("DELETE FROM pacientes WHERE id_paciente = %s", (id,))
